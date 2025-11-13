@@ -20,46 +20,56 @@
       }
     }
   </script>
-  <style> body{ font-family:'Prompt',system-ui,sans-serif; } </style>
+  <style>
+    body{ font-family:'Prompt',system-ui,sans-serif; }
+    .visually-hidden{ position:absolute !important; height:1px; width:1px; overflow:hidden; clip:rect(1px,1px,1px,1px); white-space:nowrap; }
+  </style>
 </head>
 <body class="min-h-screen bg-slate-100">
   <main class="min-h-screen grid place-items-center p-4">
     <section class="w-full max-w-md bg-surface-card rounded-2xl shadow-soft px-7 py-8 md:px-10 md:py-10">
 
       <!-- โลโก้ -->
-      <div class="flex justify-center mb-5">
+      <div class="flex justify-center mb-5 select-none">
         <img src="https://i.postimg.cc/B6wpk3yh/cropped-Logo-BJC-Big-C-2021-2048x606.png" alt="BJC Big C Logo"
-             class="h-10 md:h-12 object-contain select-none" draggable="false">
+             class="h-10 md:h-12 object-contain" draggable="false">
       </div>
 
-      <!-- หัวเรื่อง -->
+      <!-- ชื่อหน้า -->
       <h1 id="mainTitle" class="text-center text-2xl md:text-3xl font-extrabold text-slate-800 tracking-tight">
         Registration Lead Lab 2025
       </h1>
       <p id="subTitle" class="mt-2 text-center text-slate-500">ยินดีต้อนรับสู่ระบบลงทะเบียน</p>
 
-      <!-- =============== หน้าเข้าสู่ระบบ (Login) =============== -->
+      <!-- แถบแจ้งเตือน -->
+      <div id="banner" class="hidden mt-4 rounded-lg px-4 py-3 text-sm"></div>
+
+      <!-- ===== หน้าเข้าสู่ระบบ (Login) ===== -->
       <div id="loginSection" class="mt-7">
-        <form onsubmit="return handleSubmit(event)">
+        <form id="loginForm">
           <label for="phone" class="block text-sm font-medium text-slate-700 mb-2">
             กรุณากรอกเบอร์โทรศัพท์
           </label>
 
-          <input id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel"
-                 placeholder="เบอร์โทรศัพท์ที่ใช้ในการลงทะเบียน" required
-                 class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-800 placeholder-slate-400
-                        focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition"
-                 oninput="formatPhone(this)">
+          <input
+            id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel"
+            placeholder="เบอร์โทรศัพท์ที่ใช้ในการลงทะเบียน"
+            required
+            class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-800 placeholder-slate-400
+                   focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition"
+            oninput="formatPhone(this)"
+            aria-describedby="phoneHelp">
+          <p id="phoneHelp" class="mt-1 text-xs text-slate-500">ต้องเป็นตัวเลข 10 หลัก (ขึ้นต้นด้วย 0)</p>
 
-          <button type="submit"
-                  class="mt-5 w-full rounded-xl bg-emerald-700 hover:bg-emerald-800 active:bg-emerald-900
-                         text-white font-semibold py-3 transition">
+          <button id="btnLogin" type="submit"
+            class="mt-5 w-full rounded-xl bg-emerald-700 hover:bg-emerald-800 active:bg-emerald-900
+                   text-white font-semibold py-3 transition">
             เข้าสู่ระบบ
           </button>
         </form>
       </div>
 
-      <!-- ============= หน้ายืนยันการลงทะเบียน (Confirm) ============= -->
+      <!-- ===== หน้ายืนยันการลงทะเบียน (Confirm) ===== -->
       <div id="confirmSection" class="hidden">
         <p class="text-center text-slate-500 mt-2">ยืนยันการลงทะเบียน</p>
 
@@ -92,17 +102,17 @@
 
         <div class="mt-8 flex gap-3">
           <button id="btnConfirm"
-                  class="flex-1 rounded-xl bg-emerald-700 hover:bg-emerald-800 active:bg-emerald-900 text-white font-semibold py-3 transition">
+            class="flex-1 rounded-xl bg-emerald-700 hover:bg-emerald-800 active:bg-emerald-900 text-white font-semibold py-3 transition">
             ยืนยันการลงทะเบียน
           </button>
           <button type="button" id="btnBack"
-                  class="flex-1 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold py-3 transition">
+            class="flex-1 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold py-3 transition">
             ย้อนกลับ
           </button>
         </div>
       </div>
 
-      <!-- ============= หน้าลงทะเบียนสำเร็จ (Success) ============= -->
+      <!-- ===== หน้าสำเร็จ (Success) ===== -->
       <div id="successSection" class="hidden">
         <h2 class="text-center text-xl font-semibold text-slate-800 mt-1">ลงทะเบียนสำเร็จ</h2>
         <div class="mt-4 flex justify-center">
@@ -116,7 +126,7 @@
         <p class="mt-4 text-center text-slate-500">คุณได้รับการลงทะเบียนเรียบร้อยแล้ว</p>
         <div class="mt-6">
           <button id="btnGoHome"
-                  class="w-full rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold py-3 transition">
+            class="w-full rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold py-3 transition">
             กลับหน้าหลัก
           </button>
         </div>
@@ -126,23 +136,47 @@
   </main>
 
   <script>
-    /* ================== CONFIG ================== */
-    // 👉 ใส่ URL Web App ที่ได้จากการ Deploy Apps Script
+    /** ================= CONFIG ================= **/
+    // ใช้ URL Web App จาก Deploy (ตั้ง Anyone with the link)
     const API_BASE = 'https://script.google.com/macros/s/AKfycbxPlUAvgD6v2ITLaLMiQLxvx-RsUNo1te_S4ZVQcDTWzB1E23Lnk8AzgtfLjGFWFWGs/exec';
 
-    /* ================== STATE ================== */
+    /** ================= STATE ================= **/
     let REG_DATA = null;
+    let isBusy = false;
 
-    /* ================== Utils ================== */
-    function formatPhone(el){
-      let val = el.value.replace(/\D/g, '').slice(0, 10);
-      if (val.length > 6){
-        el.value = val.replace(/(\d{3})(\d{3})(\d{0,4})/, '$1-$2-$3');
-      } else if (val.length > 3){
-        el.value = val.replace(/(\d{3})(\d{0,3})/, '$1-$2');
+    /** ================= Helpers ================= **/
+    function setBanner(type, msg){
+      const el = document.getElementById('banner');
+      if (!msg) { el.className = 'hidden'; el.textContent=''; return; }
+      const base = 'mt-4 rounded-lg px-4 py-3 text-sm';
+      if (type === 'error') {
+        el.className = base + ' bg-rose-50 text-rose-700 border border-rose-200';
+      } else if (type === 'ok') {
+        el.className = base + ' bg-emerald-50 text-emerald-700 border border-emerald-200';
       } else {
-        el.value = val;
+        el.className = base + ' bg-slate-50 text-slate-700 border border-slate-200';
       }
+      el.textContent = msg;
+    }
+
+    function setLoading(btn, loading){
+      if (!btn) return;
+      btn.disabled = loading;
+      btn.classList.toggle('opacity-60', loading);
+      btn.classList.toggle('cursor-not-allowed', loading);
+      if (loading) {
+        btn.dataset._text = btn.textContent;
+        btn.textContent = 'กำลังดำเนินการ...';
+      } else if (btn.dataset._text) {
+        btn.textContent = btn.dataset._text;
+        delete btn.dataset._text;
+      }
+    }
+
+    function formatPhone(el){
+      let v = el.value.replace(/\D/g,'').slice(0,10);
+      el.value = v.length>6 ? v.replace(/(\d{3})(\d{3})(\d{0,4})/,'$1-$2-$3')
+            : v.length>3 ? v.replace(/(\d{3})(\d{0,3})/,'$1-$2') : v;
     }
 
     function showSection(which){
@@ -151,100 +185,111 @@
       const successEl = document.getElementById('successSection');
       const mainTitle = document.getElementById('mainTitle');
       const subTitle  = document.getElementById('subTitle');
+      [loginEl,confirmEl,successEl].forEach(el=>el.classList.add('hidden'));
+      setBanner(null,'');
+      if (which==='confirm'){ mainTitle.textContent='Confirm Registration'; subTitle.textContent=''; confirmEl.classList.remove('hidden'); }
+      else if (which==='success'){ mainTitle.textContent='Registration Lead Lab 2025'; subTitle.textContent=''; successEl.classList.remove('hidden'); }
+      else { mainTitle.textContent='Registration Lead Lab 2025'; subTitle.textContent='ยินดีต้อนรับสู่ระบบลงทะเบียน'; loginEl.classList.remove('hidden'); }
+    }
 
-      [loginEl, confirmEl, successEl].forEach(el => el.classList.add('hidden'));
+    function populateConfirm(d){
+      document.getElementById('cf_fullname').textContent = d.fullname || '—';
+      document.getElementById('cf_nickname').textContent = d.nickname || '—';
+      document.getElementById('cf_phone').textContent    = (d.phone||'').replace(/(\d{3})(\d{3})(\d{4})/,'$1-$2-$3') || '—';
+      document.getElementById('cf_email').textContent    = d.email   || '—';
+      document.getElementById('cf_group').textContent    = d.group   || '—';
+      document.getElementById('cf_team').textContent     = d.team    || '—';
+    }
 
-      if (which === 'confirm'){
-        mainTitle.textContent = 'Confirm Registration';
-        subTitle.textContent  = '';
-        confirmEl.classList.remove('hidden');
-      } else if (which === 'success'){
-        mainTitle.textContent = 'Registration Lead Lab 2025';
-        subTitle.textContent  = '';
-        successEl.classList.remove('hidden');
+    // fetch JSON ที่กันแคช + ตรวจ response เป็น JSON จริง
+    async function fetchJSON(url, options = {}) {
+      const u = new URL(url, location.origin);
+      // ป้องกัน cache ฝั่ง CDN/Browser
+      if (options.method && options.method.toUpperCase() === 'POST') {
+        // POST: ใส่ ts ใน header เพื่อไม่เปลี่ยน body
+        options.headers = Object.assign({}, options.headers, { 'X-TS': Date.now().toString() });
       } else {
-        mainTitle.textContent = 'Registration Lead Lab 2025';
-        subTitle.textContent  = 'ยินดีต้อนรับสู่ระบบลงทะเบียน';
-        loginEl.classList.remove('hidden');
+        u.searchParams.set('ts', Date.now().toString());
       }
+      const res = await fetch(u.toString(), { ...options, cache: 'no-store' });
+      const ctype = res.headers.get('content-type') || '';
+      if (!res.ok) {
+        const txt = await res.text().catch(()=> '');
+        throw new Error(`HTTP ${res.status} ${res.statusText} | ${txt.slice(0,200)}`);
+      }
+      if (!ctype.includes('application/json')) {
+        const txt = await res.text().catch(()=> '');
+        throw new Error(`Non-JSON response: ${txt.slice(0,200)}`);
+      }
+      return res.json();
     }
 
-    function populateConfirm(data){
-      document.getElementById('cf_fullname').textContent = data.fullname || '—';
-      document.getElementById('cf_nickname').textContent = data.nickname || '—';
-      // format phone for display
-      const fmt = (data.phone || '').replace(/(\d{3})(\d{3})(\d{4})/, '$1-$2-$3');
-      document.getElementById('cf_phone').textContent    = fmt || '—';
-      document.getElementById('cf_email').textContent    = data.email || '—';
-      document.getElementById('cf_group').textContent    = data.group || '—';
-      document.getElementById('cf_team').textContent     = data.team || '—';
-    }
-
-    /* ================== API Calls ================== */
-    async function handleSubmit(e){
-      e.preventDefault();
-      const raw = (document.getElementById('phone').value || '').replace(/\D/g, '');
-      if (!/^0\d{9}$/.test(raw)){
-        alert('กรุณากรอกเบอร์โทรศัพท์ให้ครบ 10 หลัก (ขึ้นต้นด้วย 0)');
-        return false;
-      }
-      try{
-        const url = `${API_BASE}?action=lookup&phone=${encodeURIComponent(raw)}`;
-        const res = await fetch(url, { method: 'GET' });
-        const js  = await res.json();
-
-        if (!js.ok){
-          alert('เกิดข้อผิดพลาดในการตรวจสอบข้อมูล');
-          return false;
-        }
-        if (!js.found){
-          alert('ไม่พบข้อมูลในระบบ');
-          return false;
-        }
-
-        REG_DATA = js.data || null;
-        if (!REG_DATA){
-          alert('ข้อมูลไม่ถูกต้อง');
-          return false;
-        }
-        populateConfirm(REG_DATA);
-        showSection('confirm');
-
-      } catch (err){
-        console.error(err);
-        alert('เชื่อมต่อระบบไม่สำเร็จ');
-      }
-      return false;
-    }
-
-    /* ================== Events ================== */
+    /** ================= Events ================= **/
     document.addEventListener('DOMContentLoaded', ()=>{
-      document.getElementById('btnBack')?.addEventListener('click', ()=> showSection('login'));
-      document.getElementById('btnGoHome')?.addEventListener('click', ()=> showSection('login'));
+      const loginForm = document.getElementById('loginForm');
+      const btnLogin  = document.getElementById('btnLogin');
+      const btnBack   = document.getElementById('btnBack');
+      const btnGoHome = document.getElementById('btnGoHome');
+      const btnConfirm= document.getElementById('btnConfirm');
 
-      document.getElementById('btnConfirm')?.addEventListener('click', async ()=>{
+      // เข้าสู่ระบบ (ค้นหาเบอร์)
+      loginForm.addEventListener('submit', async (e)=>{
+        e.preventDefault();
+        if (isBusy) return;
+        const raw = (document.getElementById('phone').value || '').replace(/\D/g,'');
+        if (!/^0\d{9}$/.test(raw)){
+          setBanner('error', 'กรุณากรอกเบอร์โทรศัพท์ให้ครบ 10 หลัก (ขึ้นต้นด้วย 0)');
+          return;
+        }
         try{
-          const rawPhone = (document.getElementById('cf_phone').textContent || '').replace(/\D/g, '');
-          // ใช้ form-urlencoded เพื่อลดโอกาส preflight CORS
-          const body = new URLSearchParams({ action: 'confirm', phone: rawPhone });
-
-          const res = await fetch(API_BASE, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8' },
-            body
-          });
-          const js = await res.json();
-          if (!js.ok){
-            alert(js.error === 'not_found' ? 'ไม่พบข้อมูลในระบบ' : 'บันทึกสถานะไม่สำเร็จ');
-            return;
-          }
-          showSection('success');
-        } catch (err){
-          console.error(err);
-          alert('เชื่อมต่อระบบไม่สำเร็จ');
+          isBusy = true; setLoading(btnLogin,true); setBanner(null,'');
+          const js = await fetchJSON(`${API_BASE}?action=lookup&phone=${encodeURIComponent(raw)}`);
+          if (!js.ok){ setBanner('error','เกิดข้อผิดพลาดในการตรวจสอบข้อมูล'); return; }
+          if (!js.found){ setBanner('error','ไม่พบข้อมูลในระบบ'); return; }
+          REG_DATA = js.data || null;
+          if (!REG_DATA){ setBanner('error','ข้อมูลที่ได้รับไม่ถูกต้อง'); return; }
+          populateConfirm(REG_DATA);
+          showSection('confirm');
+        }catch(err){
+          console.error('[LOOKUP ERROR]', err);
+          alert('เชื่อมต่อระบบไม่สำเร็จ\n' + String(err).slice(0,200));
+          setBanner('error','ไม่สามารถเชื่อมต่อบริการได้ กรุณาลองใหม่อีกครั้ง');
+        }finally{
+          isBusy = false; setLoading(btnLogin,false);
         }
       });
 
+      // กลับหน้าหลัก
+      btnBack.addEventListener('click', ()=> showSection('login'));
+      btnGoHome.addEventListener('click', ()=> showSection('login'));
+
+      // ยืนยันการลงทะเบียน
+      btnConfirm.addEventListener('click', async ()=>{
+        if (isBusy) return;
+        try{
+          isBusy = true; setLoading(btnConfirm,true); setBanner(null,'');
+          const rawPhone = (document.getElementById('cf_phone').textContent || '').replace(/\D/g,'');
+          const body = new URLSearchParams({ action:'confirm', phone: rawPhone });
+          const js = await fetchJSON(API_BASE, {
+            method: 'POST',
+            headers: { 'Content-Type':'application/x-www-form-urlencoded;charset=utf-8' },
+            body
+          });
+          if (!js.ok){
+            setBanner('error', js.error === 'not_found' ? 'ไม่พบข้อมูลในระบบ' : 'บันทึกสถานะไม่สำเร็จ');
+            return;
+          }
+          showSection('success');
+        }catch(err){
+          console.error('[CONFIRM ERROR]', err);
+          alert('เชื่อมต่อระบบไม่สำเร็จ\n' + String(err).slice(0,200));
+          setBanner('error','ไม่สามารถเชื่อมต่อบริการได้ กรุณาลองใหม่อีกครั้ง');
+        }finally{
+          isBusy = false; setLoading(btnConfirm,false);
+        }
+      });
+
+      // เปิดหน้าแรก
       showSection('login');
     });
   </script>
