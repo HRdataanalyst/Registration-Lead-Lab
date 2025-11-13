@@ -177,8 +177,24 @@
 
     /* ================== STATE ================== */
     let INTERVIEW_READY  = false;  // ควบคุมจากคอลัมน์ L (Show)
-    let INTERVIEW_RESULT = null;   // 'pass' | 'fail' | null (จากคอลัมน์ M)
+    let INTERVIEW_RESULT = '';   // 'pass' | 'fail' | null (จากคอลัมน์ M)
     let REG_DATA = null;
+
+    // ------- API calls -------
+async function apiLookup(phone) {
+  // GET: /exec?action=lookup&phone=0XXXXXXXXX
+  const url = `${API_BASE}?action=lookup&phone=${encodeURIComponent(phone)}`;
+  const res = await fetch(url, { method: 'GET' });
+  return res.json();
+}
+
+async function apiRegister(phone) {
+  // POST แบบ form-encoded เพื่อลด CORS preflight
+  const body = new URLSearchParams({ action: 'register', phone });
+  const res  = await fetch(API_BASE, { method: 'POST', body });
+  return res.json();
+}
+
 
     /* ================== Utils ================== */
     function formatPhone(el){
@@ -279,29 +295,47 @@
     }
 
     /* ================== API Calls ================== */
-    async function handleSubmit(e){
-      e.preventDefault();
-      const raw = (document.getElementById('phone').value || '').replace(/\D/g, '');
-      if(!/^0\d{9}$/.test(raw)){
-        alert('กรุณากรอกเบอร์โทรศัพท์ให้ครบ 10 หลัก (ขึ้นต้นด้วย 0)');
-        return false;
-      }
+   async function handleSubmit(e){
+  e.preventDefault();
+  const raw = (document.getElementById('phone').value || '').replace(/\D/g, '');
+  if(!/^0\d{9}$/.test(raw)){
+    alert('กรุณากรอกเบอร์โทรศัพท์ให้ครบ 10 หลัก (ขึ้นต้นด้วย 0)');
+    return false;
+  }
 
-      try{
-        const res = await fetch(`${API_BASE}?action=lookup&phone=${encodeURIComponent(raw)}`, {
-          method: 'GET',
-          mode: 'cors'
-        });
-        const js  = await res.json();
+  try {
+    const resp = await apiLookup(raw);
+    if (!resp.ok) throw new Error(resp.error || 'เชื่อมต่อระบบไม่สำเร็จ');
 
-        if (!js.ok){
-          alert('เกิดข้อผิดพลาดในการตรวจสอบข้อมูล');
-          return false;
-        }
-        if (!js.found){
-          alert('ไม่พบเบอร์โทรศัพท์');
-          return false;
-        }
+    if (!resp.data || !resp.data.found) {
+      alert('ไม่พบเบอร์โทรศัพท์');
+      return false;
+    }
+
+    // เติมข้อมูลหน้าคอนเฟิร์ม
+    const p = resp.data.profile || {};
+    const phoneFmt = raw.replace(/(\d{3})(\d{3})(\d{4})/, '$1-$2-$3');
+    REG_DATA = {
+      fullname: p.fullname || '—',
+      nickname: p.nickname || '—',
+      phoneFmt,
+      email:    p.email || '—',
+      group:    p.group || '—',
+      team:     p.team  || '—'
+    };
+    populateConfirm(REG_DATA);
+
+    // เก็บสถานะสัมภาษณ์จาก API (ใช้ตอนกดดูผลหลัง register)
+    INTERVIEW_READY  = !!resp.data.showInterview;
+    INTERVIEW_RESULT = (resp.data.interviewResult || ''); // 'pass'|'fail'|''
+
+    showSection('confirm');
+  } catch (err) {
+    console.error(err);
+    alert('เชื่อมต่อระบบไม่สำเร็จ');
+  }
+  return false;
+}
 
         const phoneFmt = raw.replace(/(\d{3})(\d{3})(\d{4})/, '$1-$2-$3');
         REG_DATA = {
@@ -330,6 +364,23 @@
       document.getElementById('btnBack')?.addEventListener('click', ()=> showSection('login'));
 
       document.getElementById('btnConfirm')?.addEventListener('click', async ()=>{
+  try{
+    if (!REG_DATA) return;
+    const raw = (document.getElementById('phone').value || '').replace(/\D/g, '');
+    const resp = await apiRegister(raw);
+    if (!resp.ok) throw new Error(resp.error || 'บันทึกไม่สำเร็จ');
+
+    // อัปเดตสถานะปุ่มในหน้า success ตาม API
+    INTERVIEW_READY  = !!resp.data.showInterview;
+    INTERVIEW_RESULT = (resp.data.interviewResult || '');
+
+    showSection('success');         // ไปหน้าสำเร็จ
+    updateSuccessButtonsStyle();    // ให้สีปุ่มตรงตามเงื่อนไข
+  }catch(err){
+    console.error(err);
+    alert('เชื่อมต่อระบบไม่สำเร็จ');
+  }
+});
         try{
           const raw = (document.getElementById('cf_phone').textContent || '').replace(/\D/g, '');
           const res = await fetch(API_BASE, {
