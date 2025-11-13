@@ -20,20 +20,19 @@
       }
     }
   </script>
-  <style>
-    body{ font-family:'Prompt',system-ui,sans-serif; }
-  </style>
+  <style> body{ font-family:'Prompt',system-ui,sans-serif; } </style>
 </head>
 <body class="min-h-screen bg-slate-100">
   <main class="min-h-screen grid place-items-center p-4">
     <section class="w-full max-w-md bg-surface-card rounded-2xl shadow-soft px-7 py-8 md:px-10 md:py-10">
 
       <!-- โลโก้ -->
-      <div class="flex justify-center mb-5 select-none">
-        <img src="https://i.postimg.cc/B6wpk3yh/cropped-Logo-BJC-Big-C-2021-2048x606.png" alt="BJC Big C Logo"
-             class="h-10 md:h-12 object-contain" draggable="false">
+      <div class="flex justify-center mb-5">
+        <img src="https://i.postimg.cc/B6wpk3yh/cropped-Logo-BJC-Big-C-2021-2048x606.png"
+             alt="BJC Big C Logo" class="h-10 md:h-12 object-contain select-none" draggable="false">
       </div>
 
+      <!-- หัวเรื่อง -->
       <h1 id="mainTitle" class="text-center text-2xl md:text-3xl font-extrabold text-slate-800 tracking-tight">
         Registration Lead Lab 2025
       </h1>
@@ -42,26 +41,31 @@
       <!-- แถบแจ้งเตือน -->
       <div id="banner" class="hidden mt-4 rounded-lg px-4 py-3 text-sm"></div>
 
-      <!-- ===== Login ===== -->
+      <!-- =============== Login =============== -->
       <div id="loginSection" class="mt-7">
         <form id="loginForm">
-          <label for="phone" class="block text-sm font-medium text-slate-700 mb-2">กรุณากรอกเบอร์โทรศัพท์</label>
+          <label for="phone" class="block text-sm font-medium text-slate-700 mb-2">
+            กรุณากรอกเบอร์โทรศัพท์
+          </label>
+
           <input id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel"
-                 placeholder="เบอร์โทรศัพท์ที่ใช้ในการลงทะเบียน" required
-                 class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-800 placeholder-slate-400
-                        focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition"
-                 oninput="formatPhone(this)">
+            placeholder="เบอร์โทรศัพท์ที่ใช้ในการลงทะเบียน" required
+            class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-800 placeholder-slate-400
+                   focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition"
+            oninput="formatPhone(this)">
+
           <button id="btnLogin" type="submit"
-                  class="mt-5 w-full rounded-xl bg-emerald-700 hover:bg-emerald-800 active:bg-emerald-900
-                         text-white font-semibold py-3 transition">
+            class="mt-5 w-full rounded-xl bg-emerald-700 hover:bg-emerald-800 active:bg-emerald-900
+                   text-white font-semibold py-3 transition">
             เข้าสู่ระบบ
           </button>
         </form>
       </div>
 
-      <!-- ===== Confirm ===== -->
+      <!-- ============= Confirm ============= -->
       <div id="confirmSection" class="hidden">
         <p class="text-center text-slate-500 mt-2">ยืนยันการลงทะเบียน</p>
+
         <div class="mt-6 space-y-3">
           <div class="bg-slate-100 border border-slate-200 rounded-xl p-3">
             <p class="text-xs text-slate-500">ชื่อ-นามสกุล</p>
@@ -98,10 +102,15 @@
             class="flex-1 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold py-3 transition">
             ย้อนกลับ
           </button>
+
+          <button type="button" id="btnHomeFromConfirm"
+            class="hidden flex-1 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold py-3 transition">
+            กลับหน้าหลัก
+          </button>
         </div>
       </div>
 
-      <!-- ===== Success ===== -->
+      <!-- ============= Success ============= -->
       <div id="successSection" class="hidden">
         <h2 class="text-center text-xl font-semibold text-slate-800 mt-1">ลงทะเบียนสำเร็จ</h2>
         <div class="mt-4 flex justify-center">
@@ -113,7 +122,15 @@
           </div>
         </div>
         <p class="mt-4 text-center text-slate-500">คุณได้รับการลงทะเบียนเรียบร้อยแล้ว</p>
-        <div class="mt-6">
+        <div class="mt-6 space-y-3">
+          <button id="btnViewRegistration"
+            class="w-full rounded-xl bg-emerald-700 hover:bg-emerald-800 active:bg-emerald-900 text-white font-semibold py-3 transition">
+            ดูข้อมูลการลงทะเบียน
+          </button>
+          <button id="btnInterview"
+            class="hidden w-full rounded-xl bg-emerald-700 hover:bg-emerald-800 active:bg-emerald-900 text-white font-semibold py-3 transition">
+            ดูผลการสัมภาษณ์
+          </button>
           <button id="btnGoHome"
             class="w-full rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold py-3 transition">
             กลับหน้าหลัก
@@ -121,27 +138,39 @@
         </div>
       </div>
 
+      <!-- ============= Interview Result ============= -->
+      <div id="interviewSection" class="hidden">
+        <div class="mt-4 flex justify-center">
+          <div id="iv_icon_wrap" class="h-16 w-16 rounded-full grid place-items-center shadow">
+            <svg id="iv_icon" viewBox="0 0 24 24" width="32" height="32" fill="none" aria-hidden="true"></svg>
+          </div>
+        </div>
+        <p id="iv_message" class="mt-4 text-center text-slate-600"></p>
+      </div>
+
     </section>
   </main>
 
   <script>
-    /* ===== CONFIG ===== */
-    // ใช้ URL Web App ที่ Deploy แล้ว (Anyone with the link)
+    /* ================== CONFIG ================== */
     const API_BASE = 'https://script.google.com/macros/s/AKfycbxPlUAvgD6v2ITLaLMiQLxvx-RsUNo1te_S4ZVQcDTWzB1E23Lnk8AzgtfLjGFWFWGs/exec';
 
-    /* ===== STATE ===== */
+    /* ================== STATE ================== */
+    let INTERVIEW_READY  = false; // จากคอลัมน์ L + M
+    let INTERVIEW_RESULT = null;  // 'pass' | 'fail' | null
     let REG_DATA = null;
-    let isBusy = false;
+    let isBusy   = false;
 
-    /* ===== Helpers ===== */
+    /* ================== Utils ================== */
+    const BTN_GREEN = 'w-full rounded-xl bg-emerald-700 hover:bg-emerald-800 active:bg-emerald-900 text-white font-semibold py-3 transition';
+    const BTN_GREY  = 'w-full rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold py-3 transition';
+
     function setBanner(type, msg){
       const el = document.getElementById('banner');
-      if (!msg){ el.className = 'hidden'; el.textContent=''; return; }
+      if (!msg){ el.className='hidden'; el.textContent=''; return; }
       const base = 'mt-4 rounded-lg px-4 py-3 text-sm';
-      const cls = type==='error'
-        ? base+' bg-rose-50 text-rose-700 border border-rose-200'
-        : base+' bg-emerald-50 text-emerald-700 border border-emerald-200';
-      el.className = cls;
+      el.className = type==='error' ? base+' bg-rose-50 text-rose-700 border border-rose-200'
+                                    : base+' bg-emerald-50 text-emerald-700 border border-emerald-200';
       el.textContent = msg;
     }
 
@@ -155,56 +184,127 @@
     }
 
     function formatPhone(el){
-      let v = el.value.replace(/\D/g,'').slice(0,10);
-      el.value = v.length>6 ? v.replace(/(\d{3})(\d{3})(\d{0,4})/,'$1-$2-$3')
-            : v.length>3 ? v.replace(/(\d{3})(\d{0,3})/,'$1-$2') : v;
+      let val = el.value.replace(/\D/g, '').slice(0, 10);
+      if (val.length > 6){
+        el.value = val.replace(/(\d{3})(\d{3})(\d{0,4})/, '$1-$2-$3');
+      } else if (val.length > 3){
+        el.value = val.replace(/(\d{3})(\d{0,3})/, '$1-$2');
+      } else {
+        el.value = val;
+      }
     }
 
-    function showSection(which){
-      const loginEl   = document.getElementById('loginSection');
-      const confirmEl = document.getElementById('confirmSection');
-      const successEl = document.getElementById('successSection');
-      const mainTitle = document.getElementById('mainTitle');
-      const subTitle  = document.getElementById('subTitle');
-      [loginEl,confirmEl,successEl].forEach(el=>el.classList.add('hidden'));
+    function updateSuccessButtonsStyle(){
+      const btnInterview = document.getElementById('btnInterview');
+      const btnViewReg   = document.getElementById('btnViewRegistration');
+      btnInterview.classList.toggle('hidden', !INTERVIEW_READY);
+      btnViewReg.className = INTERVIEW_READY ? BTN_GREY : BTN_GREEN;
+    }
+
+    function showSection(which, opts = {}){
+      const loginEl     = document.getElementById('loginSection');
+      const confirmEl   = document.getElementById('confirmSection');
+      const successEl   = document.getElementById('successSection');
+      const interviewEl = document.getElementById('interviewSection');
+      const subTitle    = document.getElementById('subTitle');
+      const mainTitle   = document.getElementById('mainTitle');
+
+      const btnConfirm  = document.getElementById('btnConfirm');
+      const btnBack     = document.getElementById('btnBack');
+      const btnHomeCfm  = document.getElementById('btnHomeFromConfirm');
+
+      [loginEl, confirmEl, successEl, interviewEl].forEach(el=> el.classList.add('hidden'));
       setBanner('', '');
-      if (which==='confirm'){ mainTitle.textContent='Confirm Registration'; subTitle.textContent=''; confirmEl.classList.remove('hidden'); }
-      else if (which==='success'){ mainTitle.textContent='Registration Lead Lab 2025'; subTitle.textContent=''; successEl.classList.remove('hidden'); }
-      else { mainTitle.textContent='Registration Lead Lab 2025'; subTitle.textContent='ยินดีต้อนรับสู่ระบบลงทะเบียน'; loginEl.classList.remove('hidden'); }
+
+      if (which === 'confirm'){
+        mainTitle.textContent = 'Confirm Registration';
+        subTitle.textContent  = '';
+
+        const mode = opts.mode || 'normal';
+        btnConfirm.classList.toggle('hidden', mode === 'review');
+        btnBack.classList.toggle('hidden',    mode === 'review');
+        btnHomeCfm.classList.toggle('hidden', mode !== 'review');
+
+        confirmEl.classList.remove('hidden');
+      }
+      else if (which === 'success'){
+        mainTitle.textContent = 'Registration Lead Lab 2025';
+        subTitle.textContent  = '';
+        successEl.classList.remove('hidden');
+        updateSuccessButtonsStyle();
+      }
+      else if (which === 'interview'){
+        subTitle.textContent = '';
+        renderInterviewResult(INTERVIEW_RESULT);
+        interviewEl.classList.remove('hidden');
+      }
+      else {
+        mainTitle.textContent = 'Registration Lead Lab 2025';
+        subTitle.textContent  = 'ยินดีต้อนรับสู่ระบบลงทะเบียน';
+        loginEl.classList.remove('hidden');
+      }
     }
 
-    function populateConfirm(d){
-      document.getElementById('cf_fullname').textContent = d.fullname || '—';
-      document.getElementById('cf_nickname').textContent = d.nickname || '—';
-      document.getElementById('cf_phone').textContent    = (d.phone||'').replace(/(\d{3})(\d{3})(\d{4})/,'$1-$2-$3') || '—';
-      document.getElementById('cf_email').textContent    = d.email   || '—';
-      document.getElementById('cf_group').textContent    = d.group   || '—';
-      document.getElementById('cf_team').textContent     = d.team    || '—';
+    function populateConfirm(data){
+      document.getElementById('cf_fullname').textContent = data.fullname || '—';
+      document.getElementById('cf_nickname').textContent = data.nickname || '—';
+      const phoneFmt = (data.phone || '').replace(/(\d{3})(\d{3})(\d{4})/, '$1-$2-$3');
+      document.getElementById('cf_phone').textContent    = phoneFmt || '—';
+      document.getElementById('cf_email').textContent    = data.email || '—';
+      document.getElementById('cf_group').textContent    = data.group || '—';
+      document.getElementById('cf_team').textContent     = data.team || '—';
     }
 
-    // GET JSON (กัน cache ด้วย ?ts=...)
+    function renderInterviewResult(result){
+      const iconWrap = document.getElementById('iv_icon_wrap');
+      const icon     = document.getElementById('iv_icon');
+      const msgEl    = document.getElementById('iv_message');
+      const mainTitle= document.getElementById('mainTitle');
+
+      if (result === 'pass'){
+        mainTitle.textContent = 'ผ่านการสัมภาษณ์';
+        iconWrap.className = 'h-16 w-16 rounded-full bg-emerald-200 grid place-items-center shadow';
+        icon.innerHTML     = `<path d="M7 12.5l3 3 7-7" stroke="currentColor" class="text-emerald-700" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`;
+        msgEl.textContent  = 'คุณได้รับการคัดเลือกให้ผ่านเข้าสู่รอบถัดไปของโครงการ Lead Lab';
+      } else {
+        mainTitle.textContent = 'ไม่ผ่านการสัมภาษณ์';
+        iconWrap.className = 'h-16 w-16 rounded-full bg-rose-200 grid place-items-center shadow';
+        icon.innerHTML     = `<path d="M15 9l-6 6M9 9l6 6" stroke="currentColor" class="text-rose-700" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`;
+        msgEl.textContent  = 'ขอบคุณที่เข้าร่วมโครงการ Lead Lab คุณยังไม่ผ่านการคัดเลือกในรอบนี้';
+      }
+    }
+
+    // helper ดึง JSON (กัน cache ด้วย ts)
     async function getJSON(url){
       const u = new URL(url);
       u.searchParams.set('ts', Date.now().toString());
       const res = await fetch(u.toString(), { cache:'no-store' });
-      const ctype = res.headers.get('content-type')||'';
+      const ct = res.headers.get('content-type') || '';
       if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
-      if (!ctype.includes('application/json')) throw new Error('Non-JSON response');
+      if (!ct.includes('application/json')) throw new Error('Non-JSON response');
       return res.json();
     }
 
+    /* ================== Events ================== */
     document.addEventListener('DOMContentLoaded', ()=>{
-      const loginForm = document.getElementById('loginForm');
-      const btnLogin  = document.getElementById('btnLogin');
-      const btnBack   = document.getElementById('btnBack');
-      const btnGoHome = document.getElementById('btnGoHome');
-      const btnConfirm= document.getElementById('btnConfirm');
+      document.getElementById('btnBack')?.addEventListener('click', ()=> showSection('login'));
+      document.getElementById('btnGoHome')?.addEventListener('click', ()=> showSection('login'));
 
-      // ค้นหาเบอร์
-      loginForm.addEventListener('submit', async (e)=>{
+      // ดูข้อมูลการลงทะเบียน (จาก Success → กลับไปดูแบบ review)
+      document.getElementById('btnViewRegistration')?.addEventListener('click', ()=>{
+        if (REG_DATA) populateConfirm(REG_DATA);
+        showSection('confirm', { mode:'review' });
+      });
+
+      // ปุ่มดูผลสัมภาษณ์
+      document.getElementById('btnInterview')?.addEventListener('click', ()=> showSection('interview'));
+
+      // Login submit
+      document.getElementById('loginForm').addEventListener('submit', async (e)=>{
         e.preventDefault();
         if (isBusy) return;
-        const raw = (document.getElementById('phone').value || '').replace(/\D/g,'');
+        const btnLogin = document.getElementById('btnLogin');
+        const raw = (document.getElementById('phone').value || '').replace(/\D/g, '');
         if (!/^0\d{9}$/.test(raw)){ setBanner('error','กรุณากรอกเบอร์โทรศัพท์ให้ครบ 10 หลัก (ขึ้นต้นด้วย 0)'); return; }
 
         try{
@@ -212,8 +312,12 @@
           const js = await getJSON(`${API_BASE}?action=lookup&phone=${encodeURIComponent(raw)}`);
           if (!js.ok){ setBanner('error','เกิดข้อผิดพลาดในการตรวจสอบข้อมูล'); return; }
           if (!js.found){ setBanner('error','ไม่พบข้อมูลในระบบ'); return; }
+
+          // เก็บข้อมูล + สถานะสัมภาษณ์
           REG_DATA = js.data || null;
-          if (!REG_DATA){ setBanner('error','ข้อมูลที่ได้รับไม่ถูกต้อง'); return; }
+          INTERVIEW_READY  = !!(js.data && js.data.interviewReady);
+          INTERVIEW_RESULT = js.data ? js.data.interviewResult : null;
+
           populateConfirm(REG_DATA);
           showSection('confirm');
         }catch(err){
@@ -225,45 +329,46 @@
         }
       });
 
-      // กลับ
-      btnBack.addEventListener('click', ()=> showSection('login'));
-      btnGoHome.addEventListener('click', ()=> showSection('login'));
-
-      // ยืนยันการลงทะเบียน
-      btnConfirm.addEventListener('click', async ()=>{
+      // Confirm registration
+      document.getElementById('btnConfirm')?.addEventListener('click', async ()=>{
         if (isBusy) return;
+        const btn = document.getElementById('btnConfirm');
         try{
-          isBusy = true; setLoading(btnConfirm, true);
-          const rawPhone = (document.getElementById('cf_phone').textContent || '').replace(/\D/g,'');
+          isBusy = true; setLoading(btn, true);
+          const rawPhone = (document.getElementById('cf_phone').textContent || '').replace(/\D/g, '');
 
-          // ❗ สำคัญ: ใช้ application/x-www-form-urlencoded (ไม่มี ;charset) และไม่ใส่ header อื่น ๆ
+          // สำคัญ: ใช้ application/x-www-form-urlencoded (ไม่มี ;charset) และไม่ใส่ header แปลก ๆ
           const body = new URLSearchParams({ action:'confirm', phone: rawPhone });
           const res  = await fetch(API_BASE, {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body
           });
-
-          // อ่านผลลัพธ์แบบปลอดภัย
-          const ctype = res.headers.get('content-type')||'';
+          const ct = res.headers.get('content-type') || '';
           if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
-          if (!ctype.includes('application/json')) throw new Error('Non-JSON response');
+          if (!ct.includes('application/json')) throw new Error('Non-JSON response');
           const js = await res.json();
 
           if (!js.ok){
             setBanner('error', js.error==='not_found' ? 'ไม่พบข้อมูลในระบบ' : 'บันทึกสถานะไม่สำเร็จ');
             return;
           }
+
+          // อัปเดตสถานะสัมภาษณ์ล่าสุดจาก API หลังบันทึก
+          INTERVIEW_READY  = !!(js.data && js.data.interviewReady);
+          INTERVIEW_RESULT = js.data ? js.data.interviewResult : null;
+
           showSection('success');
         }catch(err){
           console.error('[CONFIRM ERROR]', err);
           alert('เชื่อมต่อระบบไม่สำเร็จ\n' + String(err));
           setBanner('error','ไม่สามารถเชื่อมต่อบริการได้ กรุณาลองใหม่');
         }finally{
-          isBusy = false; setLoading(btnConfirm, false);
+          isBusy = false; setLoading(btn, false);
         }
       });
 
+      // เปิดหน้าแรก
       showSection('login');
     });
   </script>
