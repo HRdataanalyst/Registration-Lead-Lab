@@ -280,11 +280,14 @@
     /* ================== Events ================== */
     document.addEventListener('DOMContentLoaded', ()=>{
       document.getElementById('btnBack')?.addEventListener('click', ()=> showSection('login'));
-      document.getElementById('btnGoHome')?.addEventListener('click', ()=> showSection('login'));
+      document.getElementById('btnGoHome')?.addEventListener('click', ()=> showSection('login'));    
+      
       document.getElementById('btnViewRegistration')?.addEventListener('click', ()=>{
-        if (REG_DATA) populateConfirm(REG_DATA);
-        showSection('confirm', { mode:'review' });
-      });
+  // เติมข้อมูลล่าสุดลงหน้า Confirm หากเคย lookup แล้ว
+  if (REG_DATA) populateConfirm(REG_DATA);
+  // เปิดหน้า Confirm แบบ read-only (ซ่อนปุ่มยืนยัน/ย้อนกลับ และโชว์ปุ่มกลับหน้าหลัก)
+  showSection('confirm', { mode:'review' });
+});
       document.getElementById('btnInterview')?.addEventListener('click', ()=> showSection('interview'));
 
       // ===== เข้าสู่ระบบ (lookup) =====
@@ -363,6 +366,105 @@
       // เปิดหน้าแรก
       showSection('login');
     });
+    
+    document.addEventListener('DOMContentLoaded', ()=>{
+  // ===== ปุ่มนำทางพื้นฐาน =====
+  document.getElementById('btnBack')?.addEventListener('click', ()=> showSection('login'));
+  document.getElementById('btnGoHome')?.addEventListener('click', ()=> showSection('login'));
+  document.getElementById('btnHomeFromConfirm')?.addEventListener('click', ()=> showSection('login')); // ✅ เพิ่มบรรทัดนี้
+
+  // ===== ปุ่มในหน้า Success =====
+  document.getElementById('btnViewRegistration')?.addEventListener('click', ()=>{
+    if (REG_DATA) populateConfirm(REG_DATA);
+    // เปิดหน้า Confirm โหมด review (ซ่อน "ยืนยัน"/"ย้อนกลับ" และโชว์ "กลับหน้าหลัก")
+    showSection('confirm', { mode:'review' });
+  });
+  document.getElementById('btnInterview')?.addEventListener('click', ()=> showSection('interview'));
+
+  // ===== เข้าสู่ระบบ (lookup) =====
+  document.getElementById('loginForm').addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    if (isBusy) return;
+    const btnLogin = document.getElementById('btnLogin');
+    const raw = (document.getElementById('phone').value || '').replace(/\D/g,'');
+    if (!/^0\d{9}$/.test(raw)){
+      setBanner('error','กรุณากรอกเบอร์โทรศัพท์ให้ครบ 10 หลัก (ขึ้นต้นด้วย 0)');
+      return;
+    }
+
+    try{
+      isBusy = true; setLoading(btnLogin, true);
+      const js = await getJSON(`${API_BASE}?action=lookup&phone=${encodeURIComponent(raw)}`);
+      if (!js.ok){ setBanner('error','เกิดข้อผิดพลาดในการตรวจสอบข้อมูล'); return; }
+      if (!js.found){ setBanner('error','ไม่พบข้อมูลในระบบ'); return; }
+
+      // เก็บข้อมูลใช้แสดงผลทุกหน้า
+      REG_DATA = js.data || null;
+
+      // หาก API ฝั่ง Apps Script ใส่คีย์ interviewReady/interviewResult มาใน data ด้วย
+      INTERVIEW_READY  = !!(js.data && js.data.interviewReady);
+      INTERVIEW_RESULT = js.data ? js.data.interviewResult : null;
+
+      if (js.data && js.data.alreadyRegistered){
+        // ✅ ลงทะเบียนไว้แล้ว → ไปหน้า Success ทันที (กันลงทะเบียนซ้ำ)
+        showSection('success');
+      } else {
+        // ยังไม่ลงทะเบียน → แสดงหน้า Confirm เพื่อยืนยัน
+        populateConfirm(REG_DATA);
+        showSection('confirm');
+      }
+    }catch(err){
+      console.error('[LOOKUP ERROR]', err);
+      alert('เชื่อมต่อระบบไม่สำเร็จ\n' + String(err));
+      setBanner('error','ไม่สามารถเชื่อมต่อบริการได้ กรุณาลองใหม่');
+    }finally{
+      isBusy = false; setLoading(btnLogin, false);
+    }
+  });
+
+  // ===== ยืนยันการลงทะเบียน (confirm) =====
+  document.getElementById('btnConfirm')?.addEventListener('click', async ()=>{
+    if (isBusy) return;
+    const btn = document.getElementById('btnConfirm');
+    try{
+      isBusy = true; setLoading(btn, true);
+      const rawPhone = (document.getElementById('cf_phone').textContent || '').replace(/\D/g,'');
+
+      const body = new URLSearchParams({ action:'confirm', phone: rawPhone });
+      const res  = await fetch(API_BASE, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body
+      });
+      const ct = res.headers.get('content-type') || '';
+      if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
+      if (!ct.includes('application/json')) throw new Error('Non-JSON response');
+
+      const js = await res.json();
+      if (!js.ok){
+        setBanner('error', js.error==='not_found' ? 'ไม่พบข้อมูลในระบบ' : 'บันทึกสถานะไม่สำเร็จ');
+        return;
+      }
+
+      // อัปเดตสถานะปุ่มดูผลสัมภาษณ์ (ถ้า API ส่งกลับมา)
+      INTERVIEW_READY  = !!(js.data && js.data.interviewReady);
+      INTERVIEW_RESULT = js.data ? js.data.interviewResult : null;
+
+      showSection('success');
+    }catch(err){
+      console.error('[CONFIRM ERROR]', err);
+      alert('เชื่อมต่อระบบไม่สำเร็จ\n' + String(err));
+      setBanner('error','ไม่สามารถเชื่อมต่อบริการได้ กรุณาลองใหม่');
+    }finally{
+      isBusy = false; setLoading(btn, false);
+    }
+  });
+
+  // ===== เปิดหน้าแรก =====
+  showSection('login');
+});
+
+
   </script>
 </body>
 </html>
