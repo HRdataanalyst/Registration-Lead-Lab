@@ -74,6 +74,45 @@
   animation: pulseRing 2s infinite;
   transition: transform 0.3s ease;
 }
+/* ==== เอฟเฟกต์ชีพจรกระพริบ (Pulse Animation) ==== */
+@keyframes pulseRing {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(16,185,129, 0.5);
+  }
+  70% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 12px rgba(16,185,129, 0);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(16,185,129, 0);
+  }
+}
+
+/* เวอร์ชันสีแดงสำหรับ "ไม่ผ่าน" */
+@keyframes pulseRed {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(239,68,68, 0.5);
+  }
+  70% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 12px rgba(239,68,68, 0);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(239,68,68, 0);
+  }
+}
+
+.pulse-circle {
+  animation: pulseRing 2s infinite;
+}
+
+.pulse-circle-red {
+  animation: pulseRed 2s infinite;
+}
 
 
   </style>
@@ -297,7 +336,7 @@ const ADMIN_CODE = 'Data1234'; // ใช้ให้ตรงกับ Apps Scri
 
     // ถ้าอยากเปลี่ยนข้อความบนปุ่ม ให้ส่ง keepButtonLabel=false
     if (!keepButtonLabel){
-      if (loading){ btn.dataset.prev = btn.textContent; btn.textContent = text; }
+      if (loading){ btn.dataset.prev = btn.textContent; btn.textContent = text; } 
       else { btn.textContent = btn.dataset.prev || btn.textContent; delete btn.dataset.prev; }
     }
   }
@@ -393,7 +432,7 @@ const ADMIN_CODE = 'Data1234'; // ใช้ให้ตรงกับ Apps Scri
     subTitle.textContent  = 'ยินดีต้อนรับสู่ระบบลงทะเบียน';
     loginEl.classList.remove('hidden');
   }
-}
+}  
 
       function fmtPhone10(digits){
   const v = String(digits||'').replace(/\D/g,'').slice(0,10);
@@ -448,32 +487,32 @@ function populateConfirm(data){ document.getElementById('cf_fullname').textConte
   const msgEl    = document.getElementById('iv_message');
   const mainTitle= document.getElementById('mainTitle');
 
-  // จูนระยะหัวข้อให้พอดี
   mainTitle.classList.add('mb-2');
 
   if (result === 'pass'){
+    // ✅ ผ่านการสัมภาษณ์
     mainTitle.textContent = 'ผ่านการสัมภาษณ์';
     mainTitle.classList.add('mt-3','md:mt-4');
-    // ไอคอนเขียว + ขนาด/ช่องไฟเท่ากัน
-    iconWrap.className = '-mt-1 md:-mt-2 mb-7 h-14 w-14 rounded-full grid place-items-center shadow bg-emerald-200';
+
+    // วงกลมพื้นหลัง + ชีพจรสีเขียว
+    iconWrap.className = 'pulse-circle h-16 w-16 rounded-full bg-emerald-200 grid place-items-center shadow';
     icon.innerHTML     = `<path d="M7 12.5l3 3 7-7" stroke="currentColor" class="text-emerald-700" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`;
- 
-    // ข้อความ: กระชับช่องไฟ + ขึ้นบรรทัดใหม่ได้
-    msgEl.className = 'mt-4 text-[15px] md:text-base text-center text-slate-600 whitespace-pre-line leading-relaxed';
-msgEl.textContent = 'ยินดีด้วย!\nคุณได้รับการคัดเลือกให้ผ่านเข้าสู่รอบถัดไป\nของโครงการ Lead Lab';
- } else {
-  mainTitle.textContent = 'ไม่ผ่านการสัมภาษณ์';
-  mainTitle.classList.add('mt-3','md:mt-4');
 
-  // ไอคอนแดง + ขยับขึ้น + เว้นล่างพอดี
-  iconWrap.className = '-mt-1 md:-mt-2 mb-7 h-14 w-14 rounded-full grid place-items-center shadow bg-rose-200';
-  icon.innerHTML     = `<path d="M15 9l-6 6M9 9l6 6" stroke="currentColor" class="text-rose-700" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`;
+    msgEl.className = 'mt-10 text-[15px] md:text-base text-center text-slate-600 whitespace-pre-line leading-relaxed';
+    msgEl.textContent = 'ยินดีด้วย!\nคุณได้รับการคัดเลือกให้ผ่านเข้าสู่รอบถัดไป\nของโครงการ Lead Lab';
+  } else {
+    // ❌ ไม่ผ่านการสัมภาษณ์
+    mainTitle.textContent = 'ไม่ผ่านการสัมภาษณ์';
+    mainTitle.classList.add('mt-3','md:mt-4');
 
-  // ข้อความ: เว้นบรรทัดด้วย \n + โปร่งขึ้นเล็กน้อย
-  msgEl.className   = 'mt-4 text-[15px] md:text-base text-center text-slate-600 whitespace-pre-line leading-[1.75]';
-  msgEl.textContent = 'ขอบคุณที่เข้าร่วมโครงการ Lead Lab\nคุณยังไม่ผ่านการคัดเลือกในรอบนี้';
+    // วงกลมพื้นหลัง + ชีพจรสีแดง
+    iconWrap.className = 'pulse-circle-red h-16 w-16 rounded-full bg-rose-200 grid place-items-center shadow';
+    icon.innerHTML     = `<path d="M15 9l-6 6M9 9l6 6" stroke="currentColor" class="text-rose-700" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`;
+
+    msgEl.className = 'mt-10 text-[15px] md:text-base text-center text-slate-600 whitespace-pre-line leading-[1.75]';
+    msgEl.textContent = 'ขอบคุณที่เข้าร่วมโครงการ Lead Lab\nคุณยังไม่ผ่านการคัดเลือกในรอบนี้';
+  }
 }
-    }
      
     async function getJSON(url, { timeoutMs = 10000 } = {}){
   const u = new URL(url);
