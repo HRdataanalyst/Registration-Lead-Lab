@@ -434,9 +434,14 @@ msgEl.textContent = 'ยินดีด้วย!\nคุณได้รับ�
     if (rawInput === ADMIN_CODE){
       try{
         isBusy = true; setLoading(btnLogin, true, 'กำลังโหลด...');
-        MON_ROWS = await fetchMonitorList('');
-        MON_FILTERED = [...MON_ROWS];
-        renderMonTable(MON_FILTERED);
+        MON_ROWS = (await fetchMonitorList(''))
+  .filter(o =>
+    // กำหนด “คีย์อย่างน้อยหนึ่ง” ต้องมีข้อมูลจริง
+    ['fullname','nickname','phone','email','room','seat'].some(k => (o[k]||'').toString().trim() !== '')
+  );
+
+MON_FILTERED = [...MON_ROWS];
+renderMonTable(MON_FILTERED);
         showSection('monitor');
 
         // ---------- init ส่วนค้นหา ----------
