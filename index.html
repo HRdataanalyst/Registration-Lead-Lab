@@ -34,7 +34,7 @@
 </head>
 <body class="min-h-screen bg-slate-100">
   <main class="min-h-screen grid place-items-center p-4">
-    <section class="w-full max-w-md bg-surface-card rounded-2xl shadow-soft px-7 py-8 md:px-10 md:py-10">
+    <section id="mainCardSection" class="w-full max-w-md bg-surface-card rounded-2xl shadow-soft px-7 py-8 md:px-10 md:py-10">
 
       <!-- โลโก้ -->
       <div class="flex justify-center mb-5">
@@ -172,42 +172,42 @@
   </div>
 
   <!-- Tabs -->
-  <div class="bg-white rounded-xl shadow-soft px-6 max-w-full">
-    <div class="flex gap-8 border-b">
-      <button id="tabList" class="py-3 border-b-2 border-emerald-600 text-emerald-700 font-semibold">
-        รายชื่อผู้ลงทะเบียน
-      </button>
-      <button id="tabRooms" class="py-3 text-slate-500 hover:text-slate-700">
-        Monitor Rooms
-      </button>
-    </div>
+  <div class="bg-white rounded-xl shadow-soft px-4 py-4 max-w-full text-[13px] md:text-[14px]">
+    <div class="flex gap-6 border-b">
+  <button id="tabList" class="py-2.5 border-b-2 border-emerald-600 text-emerald-700 font-semibold text-[13px] md:text-[14px]">
+    รายชื่อผู้ลงทะเบียน
+  </button>
+  <button id="tabRooms" class="py-2.5 text-slate-500 hover:text-slate-700 text-[13px] md:text-[14px]">
+    Monitor Rooms
+  </button>
+</div>
 
     <!-- Search -->
     <div class="mt-4">
       <div class="relative">
         <input id="monSearch" type="text" placeholder="ค้นหาชื่อ, เบอร์, หรืออีเมล..."
-          class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 pr-10 text-slate-800 placeholder-slate-400
-                 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition" />
-        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">🔍</span>
+  class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 pr-9 text-[13px] md:text-[14px] text-slate-800 placeholder-slate-400
+         focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition" />
+<span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm">🔍</span>
       </div>
     </div>
 
     <!-- Table (fixed layout + wrap email) -->
 <div class="mt-5">
   <!-- ใช้ table-auto เพื่อปล่อยให้คอลัมน์ขยายตามเนื้อหา -->
-  <table class="table-auto w-full text-sm align-top">
-    <thead>
-  <tr class="bg-emerald-700 text-white">
-    <th class="text-left px-4 py-3 rounded-l-lg whitespace-nowrap">ชื่อ-นามสกุล</th>
-    <th class="text-left px-4 py-3 whitespace-nowrap">ชื่อเล่น</th>
-    <th class="text-left px-4 py-3 whitespace-nowrap">เบอร์โทรศัพท์</th>
-    <!-- Email ให้ตัดบรรทัดได้ จงใจไม่ใส่ whitespace-nowrap -->
-    <th class="text-left px-4 py-3">Email</th>
-    <th class="text-left px-4 py-3 whitespace-nowrap">ห้อง</th>
-    <th class="text-left px-4 py-3 whitespace-nowrap">ที่นั่ง</th>
-    <th class="text-left px-4 py-3 whitespace-nowrap rounded-r-lg">สถานะ</th>
-  </tr>
-</thead>
+ <table class="table-auto w-full text-xs md:text-[13px] align-top">
+  <thead>
+    <tr class="bg-emerald-700 text-white">
+      <th class="text-left px-3 py-2 rounded-l-lg whitespace-nowrap font-semibold">ชื่อ-นามสกุล</th>
+      <th class="text-left px-3 py-2 whitespace-nowrap font-semibold">ชื่อเล่น</th>
+      <th class="text-left px-3 py-2 whitespace-nowrap font-semibold">เบอร์โทรศัพท์</th>
+      <!-- Email ให้ตัดบรรทัดได้ -->
+      <th class="text-left px-3 py-2 font-semibold">Email</th>
+      <th class="text-left px-3 py-2 whitespace-nowrap font-semibold">ห้อง</th>
+      <th class="text-left px-3 py-2 whitespace-nowrap font-semibold">ที่นั่ง</th>
+      <th class="text-left px-3 py-2 whitespace-nowrap rounded-r-lg font-semibold">สถานะ</th>
+    </tr>
+  </thead>
     <tbody id="monTbody" class="bg-white divide-y divide-slate-100"></tbody>
   </table>
 </div>
@@ -282,6 +282,7 @@ const ADMIN_CODE = 'Data1234'; // ใช้ให้ตรงกับ Apps Scri
   const monitorEl   = document.getElementById('monitorSection');
   const subTitle    = document.getElementById('subTitle');
   const mainTitle   = document.getElementById('mainTitle');
+  const mainCard   = document.getElementById('mainCardSection');
 
   const btnConfirm  = document.getElementById('btnConfirm');
   const btnBack     = document.getElementById('btnBack');
@@ -291,6 +292,8 @@ const ADMIN_CODE = 'Data1234'; // ใช้ให้ตรงกับ Apps Scri
   [loginEl, confirmEl, successEl, interviewEl, monitorEl].forEach(el=> el && el.classList.add('hidden'));
   setBanner('', '');
   mainTitle.classList.remove('mt-3','md:mt-4','mt-4','md:mt-5');
+      
+  mainCard?.classList.remove('hidden');
 
   if (which === 'confirm'){
     mainTitle.textContent = 'Confirm Registration';
@@ -312,17 +315,11 @@ const ADMIN_CODE = 'Data1234'; // ใช้ให้ตรงกับ Apps Scri
     renderInterviewResult(INTERVIEW_RESULT);
     interviewEl.classList.remove('hidden');
   }
-  else if (which === 'monitor'){
-  mainTitle.textContent = 'Admin Monitor';
-  subTitle.textContent  = '';
+ else if (which === 'monitor'){
+  // ซ่อนการ์ดบนสุด (ที่มีโลโก้ + หัวข้อใหญ่)
+  mainCard?.classList.add('hidden');
 
-  // ย่อหัวเรื่อง/ระยะห่างให้เล็กลงตอนอยู่หน้า Monitor
-  mainTitle.classList.remove('text-3xl','md:text-3xl');  // เผื่อเคยตั้งไว้
-  mainTitle.classList.add('text-2xl','md:text-[26px]','leading-tight');
-  // ถ้ามีโลโก้ด้านบน ใช้ h-8 แทน h-10 เพื่อให้กรอบเล็กลง
-  const topLogo = document.querySelector('img[alt="BJC Big C Logo"]');
-  if (topLogo) topLogo.classList.remove('h-10','md:h-12'), topLogo.classList.add('h-8','md:h-9');
-
+  // ไม่ต้องตั้ง mainTitle/subTitle ใด ๆ เพราะการ์ดถูกซ่อนไปแล้ว
   monitorEl.classList.remove('hidden');
 }
       
@@ -343,18 +340,17 @@ function renderMonTable(rows){
   const tb = document.getElementById('monTbody');
   tb.innerHTML = rows.map(r=>{
     const pill = r.registered
-  ? `<span class="inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-emerald-100 text-emerald-700 px-3 py-1.5">ลงทะเบียนแล้ว</span>`
-  : `<span class="inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-rose-100 text-rose-700 px-3 py-1.5">ยังไม่ลงทะเบียน</span>`;
+  ? `<span class="inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-emerald-100 text-emerald-700 px-2.5 py-1 text-[11px] md:text-[12px]">ลงทะเบียนแล้ว</span>`
+  : `<span class="inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-rose-100 text-rose-700 px-2.5 py-1 text-[11px] md:text-[12px]">ยังไม่ลงทะเบียน</span>`;
 
-    return `<tr class="hover:bg-slate-50">
-  <td class="px-4 py-3 whitespace-nowrap">${r.fullname||''}</td>
-  <td class="px-4 py-3 whitespace-nowrap">${r.nickname||''}</td>
-  <td class="px-4 py-3 whitespace-nowrap min-w-[130px]">${fmtPhone10(r.phone)}</td>
-  <!-- Email: อนุญาตให้ขึ้นบรรทัดได้สูงสุด 2 บรรทัด และตัดคำยาว -->
-  <td class="px-4 py-3 whitespace-normal break-words clamp-2 leading-snug">${r.email||''}</td>
-  <td class="px-4 py-3 whitespace-nowrap">${r.room||''}</td>
-  <td class="px-4 py-3 whitespace-nowrap">${r.seat||''}</td>
-  <td class="px-4 py-3 whitespace-nowrap">${pill}</td>
+   return `<tr class="hover:bg-slate-50 leading-[1.8]">
+  <td class="px-3 py-2 whitespace-nowrap">${r.fullname||''}</td>
+  <td class="px-3 py-2 whitespace-nowrap">${r.nickname||''}</td>
+  <td class="px-3 py-2 whitespace-nowrap min-w-[120px]">${fmtPhone10(r.phone)}</td>
+  <td class="px-3 py-2 whitespace-normal break-words clamp-2">${r.email||''}</td>
+  <td class="px-3 py-2 whitespace-nowrap">${r.room||''}</td>
+  <td class="px-3 py-2 whitespace-nowrap">${r.seat||''}</td>
+  <td class="px-3 py-2 whitespace-nowrap">${pill}</td>
 </tr>`;
   }).join('');
 }
