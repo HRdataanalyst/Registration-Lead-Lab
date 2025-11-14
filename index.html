@@ -20,7 +20,17 @@
       }
     }
   </script>
-  <style> body{ font-family:'Prompt',system-ui,sans-serif; } </style>
+  
+  <style> 
+    body{ font-family:'Prompt',system-ui,sans-serif; } 
+    .clamp-2{
+    display:-webkit-box;
+    -webkit-line-clamp:2;
+    -webkit-box-orient:vertical;
+    overflow:hidden;
+  }
+  
+  </style>
 </head>
 <body class="min-h-screen bg-slate-100">
   <main class="min-h-screen grid place-items-center p-4">
@@ -145,7 +155,7 @@
       </section>
       
       <!-- ============= Monitor ============= -->
-<section id="monitorSection" class="hidden w-full max-w-5xl mx-auto">
+<section id="monitorSection" class="hidden w-full max-w-[70vw] lg:max-w-[1150px] mx-auto">
   <!-- Header -->
   <div class="flex items-center justify-between mb-4">
     <div>
@@ -162,7 +172,7 @@
   </div>
 
   <!-- Tabs -->
-  <div class="bg-white rounded-xl shadow-soft px-6">
+  <div class="bg-white rounded-xl shadow-soft px-6 max-w-full">
     <div class="flex gap-8 border-b">
       <button id="tabList" class="py-3 border-b-2 border-emerald-600 text-emerald-700 font-semibold">
         รายชื่อผู้ลงทะเบียน
@@ -184,27 +194,22 @@
 
     <!-- Table (fixed layout + wrap email) -->
 <div class="mt-5">
-  <div class="inline-block mx-auto rounded-xl bg-white shadow-soft max-w-full">
-    <table class="table-fixed w-full text-sm align-top">
-      <thead>
-        <tr class="bg-emerald-700 text-white">
-          <th class="text-left px-4 py-3 rounded-l-lg">ชื่อ-นามสกุล</th>
-          <th class="text-left px-4 py-3">ชื่อเล่น</th>
-          <th class="text-left px-4 py-3">เบอร์โทรศัพท์</th>
-
-          <!-- 👇 กำหนดความกว้างคอลัมน์ Email ให้แคบลง -->
-          <th class="text-left px-4 py-3 w-40 md:w-64">Email</th>
-
-          <th class="text-left px-4 py-3">ห้อง</th>
-          <th class="text-left px-4 py-3">ที่นั่ง</th>
-          <th class="text-left px-4 py-3 rounded-r-lg">สถานะ</th>
-        </tr>
-      </thead>
-      <tbody id="monTbody" class="bg-white divide-y divide-slate-100">
-        <!-- rows injected -->
-      </tbody>
-    </table>
-  </div>
+  <!-- ใช้ table-auto เพื่อปล่อยให้คอลัมน์ขยายตามเนื้อหา -->
+  <table class="table-auto w-full text-sm align-top">
+    <thead>
+  <tr class="bg-emerald-700 text-white">
+    <th class="text-left px-4 py-3 rounded-l-lg whitespace-nowrap">ชื่อ-นามสกุล</th>
+    <th class="text-left px-4 py-3 whitespace-nowrap">ชื่อเล่น</th>
+    <th class="text-left px-4 py-3 whitespace-nowrap">เบอร์โทรศัพท์</th>
+    <!-- Email ให้ตัดบรรทัดได้ จงใจไม่ใส่ whitespace-nowrap -->
+    <th class="text-left px-4 py-3">Email</th>
+    <th class="text-left px-4 py-3 whitespace-nowrap">ห้อง</th>
+    <th class="text-left px-4 py-3 whitespace-nowrap">ที่นั่ง</th>
+    <th class="text-left px-4 py-3 whitespace-nowrap rounded-r-lg">สถานะ</th>
+  </tr>
+</thead>
+    <tbody id="monTbody" class="bg-white divide-y divide-slate-100"></tbody>
+  </table>
 </div>
 
     <!-- Rooms placeholder -->
@@ -308,10 +313,19 @@ const ADMIN_CODE = 'Data1234'; // ใช้ให้ตรงกับ Apps Scri
     interviewEl.classList.remove('hidden');
   }
   else if (which === 'monitor'){
-    mainTitle.textContent = 'Admin Monitor';
-    subTitle.textContent  = '';
-    monitorEl.classList.remove('hidden');
-  }
+  mainTitle.textContent = 'Admin Monitor';
+  subTitle.textContent  = '';
+
+  // ย่อหัวเรื่อง/ระยะห่างให้เล็กลงตอนอยู่หน้า Monitor
+  mainTitle.classList.remove('text-3xl','md:text-3xl');  // เผื่อเคยตั้งไว้
+  mainTitle.classList.add('text-2xl','md:text-[26px]','leading-tight');
+  // ถ้ามีโลโก้ด้านบน ใช้ h-8 แทน h-10 เพื่อให้กรอบเล็กลง
+  const topLogo = document.querySelector('img[alt="BJC Big C Logo"]');
+  if (topLogo) topLogo.classList.remove('h-10','md:h-12'), topLogo.classList.add('h-8','md:h-9');
+
+  monitorEl.classList.remove('hidden');
+}
+      
   else {
     mainTitle.textContent = 'Registration Lead Lab 2025';
     subTitle.textContent  = 'ยินดีต้อนรับสู่ระบบลงทะเบียน';
@@ -329,27 +343,19 @@ function renderMonTable(rows){
   const tb = document.getElementById('monTbody');
   tb.innerHTML = rows.map(r=>{
     const pill = r.registered
-      ? `<span class="inline-flex items-center gap-1 rounded-full bg-emerald-100 text-emerald-700 px-3 py-1">✓ ลงทะเบียนแล้ว</span>`
-      : `<span class="inline-flex items-center gap-1 rounded-full bg-rose-100 text-rose-700 px-3 py-1">✗ ยังไม่ลงทะเบียน</span>`;
+  ? `<span class="inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-emerald-100 text-emerald-700 px-3 py-1.5">ลงทะเบียนแล้ว</span>`
+  : `<span class="inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-rose-100 text-rose-700 px-3 py-1.5">ยังไม่ลงทะเบียน</span>`;
 
-    return `<tr class="hover:bg-slate-50 align-top">
-      <td class="px-4 py-3">${r.fullname||''}</td>
-      <td class="px-4 py-3">${r.nickname||''}</td>
-
-      <!-- โทรศัพท์: ไม่ตัดบรรทัด เพื่อคงรูปแบบ -->
-      <td class="px-4 py-3 whitespace-nowrap">${fmtPhone10(r.phone)}</td>
-
-      <!-- Email: จำกัดความกว้าง + เปิดตัดบรรทัด/ตัดคำ -->
-      <td class="px-4 py-3">
-        <div class="max-w-[10rem] md:max-w-[16rem] whitespace-normal break-words leading-relaxed">
-          ${r.email||''}
-        </div>
-      </td>
-
-      <td class="px-4 py-3">${r.room||''}</td>
-      <td class="px-4 py-3">${r.seat||''}</td>
-      <td class="px-4 py-3">${pill}</td>
-    </tr>`;
+    return `<tr class="hover:bg-slate-50">
+  <td class="px-4 py-3 whitespace-nowrap">${r.fullname||''}</td>
+  <td class="px-4 py-3 whitespace-nowrap">${r.nickname||''}</td>
+  <td class="px-4 py-3 whitespace-nowrap min-w-[130px]">${fmtPhone10(r.phone)}</td>
+  <!-- Email: อนุญาตให้ขึ้นบรรทัดได้สูงสุด 2 บรรทัด และตัดคำยาว -->
+  <td class="px-4 py-3 whitespace-normal break-words clamp-2 leading-snug">${r.email||''}</td>
+  <td class="px-4 py-3 whitespace-nowrap">${r.room||''}</td>
+  <td class="px-4 py-3 whitespace-nowrap">${r.seat||''}</td>
+  <td class="px-4 py-3 whitespace-nowrap">${pill}</td>
+</tr>`;
   }).join('');
 }
  
