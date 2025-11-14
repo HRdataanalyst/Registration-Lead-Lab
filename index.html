@@ -332,21 +332,34 @@ const ADMIN_CODE = 'Data1234'; // ใช้ให้ตรงกับ Apps Scri
 
 function renderMonTable(rows){
   const tb = document.getElementById('monTbody');
-  tb.innerHTML = rows.map(r=>{
-    const pill = r.registered
-  ? `<span class="inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-emerald-100 text-emerald-700 px-2.5 py-1 text-[11px] md:text-[12px]">ลงทะเบียนแล้ว</span>`
-  : `<span class="inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-rose-100 text-rose-700 px-2.5 py-1 text-[11px] md:text-[12px]">ยังไม่ลงทะเบียน</span>`;
+  tb.innerHTML = '';
+  const BATCH = 200;
+  let i = 0;
 
-   return `<tr class="hover:bg-slate-50 leading-[1.8]">
-  <td class="px-3 py-2 whitespace-nowrap">${r.fullname||''}</td>
-  <td class="px-3 py-2 whitespace-nowrap">${r.nickname||''}</td>
-  <td class="px-3 py-2 whitespace-nowrap min-w-[120px]">${fmtPhone10(r.phone)}</td>
-  <td class="px-3 py-2 whitespace-normal break-words clamp-2">${r.email||''}</td>
-  <td class="px-3 py-2 whitespace-nowrap">${r.room||''}</td>
-  <td class="px-3 py-2 whitespace-nowrap">${r.seat||''}</td>
-  <td class="px-3 py-2 whitespace-nowrap">${pill}</td>
-</tr>`;
-  }).join('');
+  function chunk(){
+    const frag = document.createDocumentFragment();
+    for (let c = 0; c < BATCH && i < rows.length; c++, i++){
+      const r = rows[i];
+      const tr = document.createElement('tr');
+      tr.className = 'hover:bg-slate-50 leading-[1.8]';
+      const pill = r.registered
+        ? `<span class="inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-emerald-100 text-emerald-700 px-2.5 py-1 text-[11px] md:text-[12px]">ลงทะเบียนแล้ว</span>`
+        : `<span class="inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-rose-100 text-rose-700 px-2.5 py-1 text-[11px] md:text-[12px]">ยังไม่ลงทะเบียน</span>`;
+
+      tr.innerHTML = `
+        <td class="px-3 py-2 whitespace-nowrap">${r.fullname||''}</td>
+        <td class="px-3 py-2 whitespace-nowrap">${r.nickname||''}</td>
+        <td class="px-3 py-2 whitespace-nowrap min-w-[120px]">${fmtPhone10(r.phone)}</td>
+        <td class="px-3 py-2 whitespace-normal break-words clamp-2">${r.email||''}</td>
+        <td class="px-3 py-2 whitespace-nowrap">${r.room||''}</td>
+        <td class="px-3 py-2 whitespace-nowrap">${r.seat||''}</td>
+        <td class="px-3 py-2 whitespace-nowrap">${pill}</td>`;
+      frag.appendChild(tr);
+    }
+    tb.appendChild(frag);
+    if (i < rows.length) requestAnimationFrame(chunk);
+  }
+  requestAnimationFrame(chunk);
 }
  
 function populateConfirm(data){ document.getElementById('cf_fullname').textContent = data.fullname || '—';
@@ -391,24 +404,50 @@ msgEl.textContent = 'ยินดีด้วย!\nคุณได้รับ�
 }
     }
      
-    async function getJSON(url){
-      const u = new URL(url);
-      u.searchParams.set('ts', Date.now().toString());
-      const res = await fetch(u.toString(), { cache:'no-store' });
-      const ct = res.headers.get('content-type') || '';
-      if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
-      if (!ct.includes('application/json')) throw new Error('Non-JSON response');
-      return res.json();
-    }
+    async function getJSON(url, { timeoutMs = 10000 } = {}){
+  const u = new URL(url);
+  u.searchParams.set('ts', Date.now().toString());
+
+  const ctl = new AbortController();
+  const t = setTimeout(() => ctl.abort('timeout'), timeoutMs);
+
+  const res = await fetch(u.toString(), { cache: 'no-store', signal: ctl.signal })
+    .catch(err => { clearTimeout(t); throw err; });
+  clearTimeout(t);
+
+  const ct = res?.headers?.get('content-type') || '';
+  if (!res?.ok) throw new Error(`HTTP ${res?.status} ${res?.statusText}`);
+  if (!ct.includes('application/json')) throw new Error('Non-JSON response');
+  return res.json();
+}
     
     async function fetchMonitorList(q=''){
+  const CACHE_KEY = 'MON_ROWS_CACHE_V1';
+  const now = Date.now();
+
+  // ใช้แคชเฉพาะตอน q ว่าง (โหลดครั้งแรกทั้งหมด)
+  if (!q) {
+    try {
+      const cached = JSON.parse(sessionStorage.getItem(CACHE_KEY) || 'null');
+      if (cached && (now - cached.ts) < 5 * 60 * 1000) {
+        return cached.rows || [];
+      }
+    } catch (_) {}
+  }
+
   const url = new URL(API_BASE);
   url.searchParams.set('action','list');
   url.searchParams.set('code', ADMIN_CODE);
   if (q) url.searchParams.set('q', q);
+
   const js = await getJSON(url.toString());
   if (!js.ok) throw new Error(js.error || 'list_failed');
-  return js.rows || [];
+  const rows = js.rows || [];
+
+  if (!q) {
+    try { sessionStorage.setItem(CACHE_KEY, JSON.stringify({ ts: now, rows })); } catch(_) {}
+  }
+  return rows;
 }
 
 
@@ -440,20 +479,24 @@ renderMonTable(MON_FILTERED);
 
         // ---------- init ส่วนค้นหา ----------
         const searchEl = document.getElementById('monSearch');
-        searchEl.value = '';
-        searchEl.oninput = (e)=>{
-          const q = e.target.value.trim().toLowerCase();
-          if (!q){ MON_FILTERED = [...MON_ROWS]; renderMonTable(MON_FILTERED); return; }
-          MON_FILTERED = MON_ROWS.filter(o =>
-            (o.fullname||'').toLowerCase().includes(q) ||
-            (o.nickname||'').toLowerCase().includes(q) ||
-            (o.phone||'').toLowerCase().includes(q)    ||
-            (o.email||'').toLowerCase().includes(q)    ||
-            (o.room||'').toLowerCase().includes(q)     ||
-            (o.seat||'').toLowerCase().includes(q)
-          );
-          renderMonTable(MON_FILTERED);
-        };
+searchEl.value = '';
+let qTimer = null;
+searchEl.oninput = (e)=>{
+  clearTimeout(qTimer);
+  qTimer = setTimeout(() => {
+    const q = e.target.value.trim().toLowerCase();
+    if (!q){ MON_FILTERED = [...MON_ROWS]; renderMonTable(MON_FILTERED); return; }
+    MON_FILTERED = MON_ROWS.filter(o =>
+      (o.fullname||'').toLowerCase().includes(q) ||
+      (o.nickname||'').toLowerCase().includes(q) ||
+      (o.phone||'').toLowerCase().includes(q)    ||
+      (o.email||'').toLowerCase().includes(q)    ||
+      (o.room||'').toLowerCase().includes(q)     ||
+      (o.seat||'').toLowerCase().includes(q)
+    );
+    renderMonTable(MON_FILTERED);
+  }, 200);
+};
 
         
         tabRooms.onclick = ()=>{
