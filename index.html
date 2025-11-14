@@ -49,7 +49,7 @@
             placeholder="เบอร์โทรศัพท์ที่ใช้ในการลงทะเบียน" required
             class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-800 placeholder-slate-400
                    focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition"
-            oninput="formatPhone(this)">
+            >
           <button id="btnLogin" type="submit"
             class="mt-5 w-full rounded-xl bg-emerald-700 hover:bg-emerald-800 active:bg-emerald-900
                    text-white font-semibold py-3 transition">
@@ -142,7 +142,77 @@
         </div>
         <p id="iv_message" class="mt-4 text-center text-slate-600"></p>
       </div>
+      </section>
+      
+      <!-- ============= Monitor ============= -->
+<section id="monitorSection" class="hidden w-full max-w-5xl mx-auto">
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-4">
+    <div>
+      <h2 class="text-2xl font-extrabold text-slate-800">Admin Monitor</h2>
+      <p class="text-slate-500 text-sm">ระบบจัดการและติดตามการลงทะเบียน</p>
+    </div>
 
+    <!-- ✅ เปลี่ยนเป็น Edit Data -->
+    <a href="https://docs.google.com/spreadsheets/d/1PAuC-sG_ugBis9amyE_dGWCc3Vuqn0aliy6iIkDky_0/edit?usp=sharing"
+       target="_blank"
+       class="inline-flex items-center gap-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-semibold px-4 py-2 shadow">
+      ✎ Edit Data
+    </a>
+  </div>
+
+  <!-- Tabs -->
+  <div class="bg-white rounded-xl shadow-soft px-6">
+    <div class="flex gap-8 border-b">
+      <button id="tabList" class="py-3 border-b-2 border-emerald-600 text-emerald-700 font-semibold">
+        รายชื่อผู้ลงทะเบียน
+      </button>
+      <button id="tabRooms" class="py-3 text-slate-500 hover:text-slate-700">
+        Monitor Rooms
+      </button>
+    </div>
+
+    <!-- Search -->
+    <div class="mt-4">
+      <div class="relative">
+        <input id="monSearch" type="text" placeholder="ค้นหาชื่อ, เบอร์, หรืออีเมล..."
+          class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 pr-10 text-slate-800 placeholder-slate-400
+                 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition" />
+        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">🔍</span>
+      </div>
+    </div>
+
+    <!-- Table (fixed layout + wrap email) -->
+<div class="mt-5">
+  <div class="inline-block mx-auto rounded-xl bg-white shadow-soft max-w-full">
+    <table class="table-fixed w-full text-sm align-top">
+      <thead>
+        <tr class="bg-emerald-700 text-white">
+          <th class="text-left px-4 py-3 rounded-l-lg">ชื่อ-นามสกุล</th>
+          <th class="text-left px-4 py-3">ชื่อเล่น</th>
+          <th class="text-left px-4 py-3">เบอร์โทรศัพท์</th>
+
+          <!-- 👇 กำหนดความกว้างคอลัมน์ Email ให้แคบลง -->
+          <th class="text-left px-4 py-3 w-40 md:w-64">Email</th>
+
+          <th class="text-left px-4 py-3">ห้อง</th>
+          <th class="text-left px-4 py-3">ที่นั่ง</th>
+          <th class="text-left px-4 py-3 rounded-r-lg">สถานะ</th>
+        </tr>
+      </thead>
+      <tbody id="monTbody" class="bg-white divide-y divide-slate-100">
+        <!-- rows injected -->
+      </tbody>
+    </table>
+  </div>
+</div>
+
+    <!-- Rooms placeholder -->
+    <div id="roomsPane" class="hidden py-8 text-slate-500">Coming soon: สรุปจำนวนในแต่ละห้อง</div>
+
+    <div class="h-5"></div>
+    
+  </div>
     </section>
   </main>
 
@@ -155,6 +225,9 @@
     let INTERVIEW_RESULT = null;  // 'pass' | 'fail' | null
     let REG_DATA = null;
     let isBusy = false;
+    let MON_ROWS = [];   // รายการทั้งหมดจาก API
+let MON_FILTERED = []; // หลังกรอง
+const ADMIN_CODE = 'Data1234'; // ใช้ให้ตรงกับ Apps Script
 
     /* ================== Utils ================== */
     const BTN_GREEN = 'w-full rounded-xl bg-emerald-700 hover:bg-emerald-800 active:bg-emerald-900 text-white font-semibold py-3 transition';
@@ -197,51 +270,90 @@
     }
 
     function showSection(which, opts = {}){
-      const loginEl     = document.getElementById('loginSection');
-      const confirmEl   = document.getElementById('confirmSection');
-      const successEl   = document.getElementById('successSection');
-      const interviewEl = document.getElementById('interviewSection');
-      const subTitle    = document.getElementById('subTitle');
-      const mainTitle   = document.getElementById('mainTitle');
+  const loginEl     = document.getElementById('loginSection');
+  const confirmEl   = document.getElementById('confirmSection');
+  const successEl   = document.getElementById('successSection');
+  const interviewEl = document.getElementById('interviewSection');
+  const monitorEl   = document.getElementById('monitorSection');
+  const subTitle    = document.getElementById('subTitle');
+  const mainTitle   = document.getElementById('mainTitle');
 
-      const btnConfirm  = document.getElementById('btnConfirm');
-      const btnBack     = document.getElementById('btnBack');
-      const btnHomeCfm  = document.getElementById('btnHomeFromConfirm');
+  const btnConfirm  = document.getElementById('btnConfirm');
+  const btnBack     = document.getElementById('btnBack');
+  const btnHomeCfm  = document.getElementById('btnHomeFromConfirm');
 
-      [loginEl, confirmEl, successEl, interviewEl].forEach(el=> el.classList.add('hidden'));
-      setBanner('', '');
-       
-      mainTitle.classList.remove('mt-3','md:mt-4','mt-4','md:mt-5');
+  // ซ่อนทุกหน้าเสมอ (รวม monitor)
+  [loginEl, confirmEl, successEl, interviewEl, monitorEl].forEach(el=> el && el.classList.add('hidden'));
+  setBanner('', '');
+  mainTitle.classList.remove('mt-3','md:mt-4','mt-4','md:mt-5');
 
-      if (which === 'confirm'){
-        mainTitle.textContent = 'Confirm Registration';
-        subTitle.textContent  = '';
-        const mode = opts.mode || 'normal';
-        btnConfirm.classList.toggle('hidden', mode === 'review');
-        btnBack.classList.toggle('hidden',    mode === 'review');
-        btnHomeCfm.classList.toggle('hidden', mode !== 'review');
-        confirmEl.classList.remove('hidden');
-      }
-      else if (which === 'success'){
-        mainTitle.textContent = 'Registration Lead Lab 2025';
-        subTitle.textContent  = '';
-        successEl.classList.remove('hidden');
-        updateSuccessButtonsStyle();
-      }
-      else if (which === 'interview'){
-        subTitle.textContent = '';
-        renderInterviewResult(INTERVIEW_RESULT);
-        interviewEl.classList.remove('hidden');
-      }
-      else {
-        mainTitle.textContent = 'Registration Lead Lab 2025';
-        subTitle.textContent  = 'ยินดีต้อนรับสู่ระบบลงทะเบียน';
-        loginEl.classList.remove('hidden');
-      }
-    }
+  if (which === 'confirm'){
+    mainTitle.textContent = 'Confirm Registration';
+    subTitle.textContent  = '';
+    const mode = opts.mode || 'normal';
+    btnConfirm.classList.toggle('hidden', mode === 'review');
+    btnBack.classList.toggle('hidden',    mode === 'review');
+    btnHomeCfm.classList.toggle('hidden', mode !== 'review');
+    confirmEl.classList.remove('hidden');
+  }
+  else if (which === 'success'){
+    mainTitle.textContent = 'Registration Lead Lab 2025';
+    subTitle.textContent  = '';
+    successEl.classList.remove('hidden');
+    updateSuccessButtonsStyle();
+  }
+  else if (which === 'interview'){
+    subTitle.textContent = '';
+    renderInterviewResult(INTERVIEW_RESULT);
+    interviewEl.classList.remove('hidden');
+  }
+  else if (which === 'monitor'){
+    mainTitle.textContent = 'Admin Monitor';
+    subTitle.textContent  = '';
+    monitorEl.classList.remove('hidden');
+  }
+  else {
+    mainTitle.textContent = 'Registration Lead Lab 2025';
+    subTitle.textContent  = 'ยินดีต้อนรับสู่ระบบลงทะเบียน';
+    loginEl.classList.remove('hidden');
+  }
+}
 
-    function populateConfirm(data){
-      document.getElementById('cf_fullname').textContent = data.fullname || '—';
+      function fmtPhone10(digits){
+  const v = String(digits||'').replace(/\D/g,'').slice(0,10);
+  if (v.length === 10) return v.replace(/(\d{3})(\d{3})(\d{4})/, '$1-$2-$3');
+  return v;
+}
+
+function renderMonTable(rows){
+  const tb = document.getElementById('monTbody');
+  tb.innerHTML = rows.map(r=>{
+    const pill = r.registered
+      ? `<span class="inline-flex items-center gap-1 rounded-full bg-emerald-100 text-emerald-700 px-3 py-1">✓ ลงทะเบียนแล้ว</span>`
+      : `<span class="inline-flex items-center gap-1 rounded-full bg-rose-100 text-rose-700 px-3 py-1">✗ ยังไม่ลงทะเบียน</span>`;
+
+    return `<tr class="hover:bg-slate-50 align-top">
+      <td class="px-4 py-3">${r.fullname||''}</td>
+      <td class="px-4 py-3">${r.nickname||''}</td>
+
+      <!-- โทรศัพท์: ไม่ตัดบรรทัด เพื่อคงรูปแบบ -->
+      <td class="px-4 py-3 whitespace-nowrap">${fmtPhone10(r.phone)}</td>
+
+      <!-- Email: จำกัดความกว้าง + เปิดตัดบรรทัด/ตัดคำ -->
+      <td class="px-4 py-3">
+        <div class="max-w-[10rem] md:max-w-[16rem] whitespace-normal break-words leading-relaxed">
+          ${r.email||''}
+        </div>
+      </td>
+
+      <td class="px-4 py-3">${r.room||''}</td>
+      <td class="px-4 py-3">${r.seat||''}</td>
+      <td class="px-4 py-3">${pill}</td>
+    </tr>`;
+  }).join('');
+}
+ 
+function populateConfirm(data){ document.getElementById('cf_fullname').textContent = data.fullname || '—';
       document.getElementById('cf_nickname').textContent = data.nickname || '—';
       const phoneFmt = (data.phone || '').replace(/(\d{3})(\d{3})(\d{4})/, '$1-$2-$3');
       document.getElementById('cf_phone').textContent    = phoneFmt || '—';
@@ -292,55 +404,116 @@ msgEl.textContent = 'ยินดีด้วย!\nคุณได้รับ�
       if (!ct.includes('application/json')) throw new Error('Non-JSON response');
       return res.json();
     }
+    
+    async function fetchMonitorList(q=''){
+  const url = new URL(API_BASE);
+  url.searchParams.set('action','list');
+  url.searchParams.set('code', ADMIN_CODE);
+  if (q) url.searchParams.set('q', q);
+  const js = await getJSON(url.toString());
+  if (!js.ok) throw new Error(js.error || 'list_failed');
+  return js.rows || [];
+}
+
 
     /* ================== Events ================== */
-    document.addEventListener('DOMContentLoaded', ()=>{
-      document.getElementById('btnBack')?.addEventListener('click', ()=> showSection('login'));
-      document.getElementById('btnGoHome')?.addEventListener('click', ()=> showSection('login'));    
-      
-      document.getElementById('btnViewRegistration')?.addEventListener('click', ()=>{
-  // เติมข้อมูลล่าสุดลงหน้า Confirm หากเคย lookup แล้ว
-  if (REG_DATA) populateConfirm(REG_DATA);
-  // เปิดหน้า Confirm แบบ read-only (ซ่อนปุ่มยืนยัน/ย้อนกลับ และโชว์ปุ่มกลับหน้าหลัก)
-  showSection('confirm', { mode:'review' });
-});
-      document.getElementById('btnInterview')?.addEventListener('click', ()=> showSection('interview'));
+    document.addEventListener('DOMContentLoaded', () => {
+  /* ========= แทนบล็อก submit ทั้งหมด ========= */
+  document.getElementById('loginForm').addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    if (isBusy) return;
 
-      // ===== เข้าสู่ระบบ (lookup) =====
-      document.getElementById('loginForm').addEventListener('submit', async (e)=>{
-        e.preventDefault();
-        if (isBusy) return;
-        const btnLogin = document.getElementById('btnLogin');
-        const raw = (document.getElementById('phone').value || '').replace(/\D/g,'');
-        if (!/^0\d{9}$/.test(raw)){ setBanner('error','กรุณากรอกเบอร์โทรศัพท์ให้ครบ 10 หลัก (ขึ้นต้นด้วย 0)'); return; }
+    const btnLogin = document.getElementById('btnLogin');
 
-        try{
-          isBusy = true; setLoading(btnLogin, true);
-          const js = await getJSON(`${API_BASE}?action=lookup&phone=${encodeURIComponent(raw)}`);
-          if (!js.ok){ setBanner('error','เกิดข้อผิดพลาดในการตรวจสอบข้อมูล'); return; }
-          if (!js.found){ setBanner('error','ไม่พบข้อมูลในระบบ'); return; }
+    // ใช้ค่าดิบจากช่อง (อย่าแปลงก่อน) เพื่อให้รับ ADMIN_CODE ได้
+    const rawInput = (document.getElementById('phone').value || '').trim();
 
-          // เก็บข้อมูลที่ใช้แสดงผลทุกหน้า
-          REG_DATA = js.data || null;
-          INTERVIEW_READY  = !!(js.data && js.data.interviewReady);
-          INTERVIEW_RESULT = js.data ? js.data.interviewResult : null;
+    // 1) โหมดแอดมิน: เทียบค่าดิบกับ ADMIN_CODE ตรง ๆ
+    if (rawInput === ADMIN_CODE){
+      try{
+        isBusy = true; setLoading(btnLogin, true, 'กำลังโหลด...');
+        MON_ROWS = await fetchMonitorList('');
+        MON_FILTERED = [...MON_ROWS];
+        renderMonTable(MON_FILTERED);
+        showSection('monitor');
 
-          if (js.data && js.data.alreadyRegistered) {
-            // ✅ ลงทะเบียนไว้แล้ว → ไปหน้า Success ทันที (กันลงทะเบียนซ้ำ)
-            showSection('success');
-          } else {
-            // ยังไม่ลงทะเบียน → แสดงหน้า Confirm ให้กดยืนยัน
-            populateConfirm(REG_DATA);
-            showSection('confirm');
-          }
-        }catch(err){
-          console.error('[LOOKUP ERROR]', err);
-          alert('เชื่อมต่อระบบไม่สำเร็จ\n' + String(err));
-          setBanner('error','ไม่สามารถเชื่อมต่อบริการได้ กรุณาลองใหม่');
-        }finally{
-          isBusy = false; setLoading(btnLogin, false);
-        }
-      });
+        // ---------- init ส่วนค้นหา ----------
+        const searchEl = document.getElementById('monSearch');
+        searchEl.value = '';
+        searchEl.oninput = (e)=>{
+          const q = e.target.value.trim().toLowerCase();
+          if (!q){ MON_FILTERED = [...MON_ROWS]; renderMonTable(MON_FILTERED); return; }
+          MON_FILTERED = MON_ROWS.filter(o =>
+            (o.fullname||'').toLowerCase().includes(q) ||
+            (o.nickname||'').toLowerCase().includes(q) ||
+            (o.phone||'').toLowerCase().includes(q)    ||
+            (o.email||'').toLowerCase().includes(q)    ||
+            (o.room||'').toLowerCase().includes(q)     ||
+            (o.seat||'').toLowerCase().includes(q)
+          );
+          renderMonTable(MON_FILTERED);
+        };
+
+        // ---------- init แท็บ ----------
+        const tabList   = document.getElementById('tabList');
+        const tabRooms  = document.getElementById('tabRooms');
+        const roomsPane = document.getElementById('roomsPane');
+        const tableWrap = document.querySelector('#monitorSection table').parentElement;
+
+        tabList.onclick = ()=>{
+          tabList.className = 'py-3 border-b-2 border-emerald-600 text-emerald-700 font-semibold';
+          tabRooms.className= 'py-3 text-slate-500 hover:text-slate-700';
+          roomsPane.classList.add('hidden');
+          tableWrap.classList.remove('hidden');
+        };
+        tabRooms.onclick = ()=>{
+          tabRooms.className= 'py-3 border-b-2 border-emerald-600 text-emerald-700 font-semibold';
+          tabList.className = 'py-3 text-slate-500 hover:text-slate-700';
+          tableWrap.classList.add('hidden');
+          roomsPane.classList.remove('hidden');
+        };
+
+      } finally {
+        isBusy = false; setLoading(btnLogin, false);
+      }
+      return; // ❗ สำคัญ: อย่าให้หลุดไปตรวจเบอร์ต่อ
+    }
+
+    // 2) โหมดผู้ใช้ทั่วไป: แปลงเป็น “ตัวเลข 10 หลัก” แล้วค่อยตรวจ
+    const digits = rawInput.replace(/\D/g,'').slice(0,10);
+    if (!/^0\d{9}$/.test(digits)){
+      setBanner('error','กรุณากรอกเบอร์โทรศัพท์ให้ครบ 10 หลัก (ขึ้นต้นด้วย 0)');
+      return;
+    }
+
+    // เรียก API lookup ด้วยเลข 10 หลัก
+    try{
+      isBusy = true; setLoading(btnLogin, true);
+      const js = await getJSON(`${API_BASE}?action=lookup&phone=${encodeURIComponent(digits)}`);
+      if (!js.ok){ setBanner('error','เกิดข้อผิดพลาดในการตรวจสอบข้อมูล'); return; }
+      if (!js.found){ setBanner('error','ไม่พบข้อมูลในระบบ'); return; }
+
+      // เก็บ state สำหรับหน้าอื่น ๆ
+      REG_DATA         = js.data || null;
+      INTERVIEW_READY  = !!(js.data && js.data.interviewReady);
+      INTERVIEW_RESULT = js.data ? js.data.interviewResult : null;
+
+      if (js.data && js.data.alreadyRegistered) {
+        // ลงทะเบียนไว้แล้ว → ไปหน้า Success
+        showSection('success');
+      } else {
+        // ยังไม่ลงทะเบียน → ไปหน้า Confirm
+        populateConfirm(REG_DATA);
+        showSection('confirm');
+      }
+    }catch(err){
+      console.error('[LOOKUP ERROR]', err);
+      alert('เชื่อมต่อระบบไม่สำเร็จ\n' + String(err));
+      setBanner('error','ไม่สามารถเชื่อมต่อบริการได้ กรุณาลองใหม่');
+    }finally{
+      isBusy = false; setLoading(btnLogin, false);
+    }
+  });
 
       // ===== ยืนยันการลงทะเบียน (confirm) =====
       document.getElementById('btnConfirm')?.addEventListener('click', async ()=>{
@@ -382,104 +555,7 @@ msgEl.textContent = 'ยินดีด้วย!\nคุณได้รับ�
       // เปิดหน้าแรก
       showSection('login');
     });
-    
-    document.addEventListener('DOMContentLoaded', ()=>{
-  // ===== ปุ่มนำทางพื้นฐาน =====
-  document.getElementById('btnBack')?.addEventListener('click', ()=> showSection('login'));
-  document.getElementById('btnGoHome')?.addEventListener('click', ()=> showSection('login'));
-  document.getElementById('btnHomeFromConfirm')?.addEventListener('click', ()=> showSection('login')); // ✅ เพิ่มบรรทัดนี้
-
-  // ===== ปุ่มในหน้า Success =====
-  document.getElementById('btnViewRegistration')?.addEventListener('click', ()=>{
-    if (REG_DATA) populateConfirm(REG_DATA);
-    // เปิดหน้า Confirm โหมด review (ซ่อน "ยืนยัน"/"ย้อนกลับ" และโชว์ "กลับหน้าหลัก")
-    showSection('confirm', { mode:'review' });
-  });
-  document.getElementById('btnInterview')?.addEventListener('click', ()=> showSection('interview'));
-
-  // ===== เข้าสู่ระบบ (lookup) =====
-  document.getElementById('loginForm').addEventListener('submit', async (e)=>{
-    e.preventDefault();
-    if (isBusy) return;
-    const btnLogin = document.getElementById('btnLogin');
-    const raw = (document.getElementById('phone').value || '').replace(/\D/g,'');
-    if (!/^0\d{9}$/.test(raw)){
-      setBanner('error','กรุณากรอกเบอร์โทรศัพท์ให้ครบ 10 หลัก (ขึ้นต้นด้วย 0)');
-      return;
-    }
-
-    try{
-      isBusy = true; setLoading(btnLogin, true);
-      const js = await getJSON(`${API_BASE}?action=lookup&phone=${encodeURIComponent(raw)}`);
-      if (!js.ok){ setBanner('error','เกิดข้อผิดพลาดในการตรวจสอบข้อมูล'); return; }
-      if (!js.found){ setBanner('error','ไม่พบข้อมูลในระบบ'); return; }
-
-      // เก็บข้อมูลใช้แสดงผลทุกหน้า
-      REG_DATA = js.data || null;
-
-      // หาก API ฝั่ง Apps Script ใส่คีย์ interviewReady/interviewResult มาใน data ด้วย
-      INTERVIEW_READY  = !!(js.data && js.data.interviewReady);
-      INTERVIEW_RESULT = js.data ? js.data.interviewResult : null;
-
-      if (js.data && js.data.alreadyRegistered){
-        // ✅ ลงทะเบียนไว้แล้ว → ไปหน้า Success ทันที (กันลงทะเบียนซ้ำ)
-        showSection('success');
-      } else {
-        // ยังไม่ลงทะเบียน → แสดงหน้า Confirm เพื่อยืนยัน
-        populateConfirm(REG_DATA);
-        showSection('confirm');
-      }
-    }catch(err){
-      console.error('[LOOKUP ERROR]', err);
-      alert('เชื่อมต่อระบบไม่สำเร็จ\n' + String(err));
-      setBanner('error','ไม่สามารถเชื่อมต่อบริการได้ กรุณาลองใหม่');
-    }finally{
-      isBusy = false; setLoading(btnLogin, false);
-    }
-  });
-
-  // ===== ยืนยันการลงทะเบียน (confirm) =====
-  document.getElementById('btnConfirm')?.addEventListener('click', async ()=>{
-    if (isBusy) return;
-    const btn = document.getElementById('btnConfirm');
-    try{
-      isBusy = true; setLoading(btn, true);
-      const rawPhone = (document.getElementById('cf_phone').textContent || '').replace(/\D/g,'');
-
-      const body = new URLSearchParams({ action:'confirm', phone: rawPhone });
-      const res  = await fetch(API_BASE, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body
-      });
-      const ct = res.headers.get('content-type') || '';
-      if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
-      if (!ct.includes('application/json')) throw new Error('Non-JSON response');
-
-      const js = await res.json();
-      if (!js.ok){
-        setBanner('error', js.error==='not_found' ? 'ไม่พบข้อมูลในระบบ' : 'บันทึกสถานะไม่สำเร็จ');
-        return;
-      }
-
-      // อัปเดตสถานะปุ่มดูผลสัมภาษณ์ (ถ้า API ส่งกลับมา)
-      INTERVIEW_READY  = !!(js.data && js.data.interviewReady);
-      INTERVIEW_RESULT = js.data ? js.data.interviewResult : null;
-
-      showSection('success');
-    }catch(err){
-      console.error('[CONFIRM ERROR]', err);
-      alert('เชื่อมต่อระบบไม่สำเร็จ\n' + String(err));
-      setBanner('error','ไม่สามารถเชื่อมต่อบริการได้ กรุณาลองใหม่');
-    }finally{
-      isBusy = false; setLoading(btn, false);
-    }
-  });
-
-  // ===== เปิดหน้าแรก =====
-  showSection('login');
-});
-
+ 
 
   </script>
 </body>
