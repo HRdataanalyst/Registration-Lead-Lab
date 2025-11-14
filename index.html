@@ -421,7 +421,7 @@ msgEl.textContent = 'ยินดีด้วย!\nคุณได้รับ�
     /* ================== Events ================== */
     document.addEventListener('DOMContentLoaded', () => {
   /* ========= แทนบล็อก submit ทั้งหมด ========= */
-  document.getElementById('loginForm').addEventListener('submit', async (e)=>{
+   document.getElementById('loginForm').addEventListener('submit', async (e)=>{
     e.preventDefault();
     if (isBusy) return;
 
@@ -558,6 +558,42 @@ renderMonTable(MON_FILTERED);
           isBusy = false; setLoading(btn, false);
         }
       });
+      // ===== ปุ่มในหน้า Success =====
+document.getElementById('btnViewRegistration')?.addEventListener('click', () => {
+  // เปิดหน้า Confirm แบบอ่านอย่างเดียว (review)
+  if (!REG_DATA) { setBanner('error', 'ไม่พบข้อมูลลงทะเบียน'); return; }
+  populateConfirm(REG_DATA);
+  showSection('confirm', { mode: 'review' }); // ซ่อนปุ่มยืนยัน/ย้อนกลับ และโชว์ปุ่ม "กลับหน้าหลัก"
+});
+
+document.getElementById('btnGoHome')?.addEventListener('click', () => {
+  try { document.getElementById('loginForm')?.reset(); } catch(e){}
+  REG_DATA = null; INTERVIEW_READY = false; INTERVIEW_RESULT = null;
+  showSection('login');
+});
+
+// ===== ปุ่มในหน้า Confirm =====
+document.getElementById('btnBack')?.addEventListener('click', () => {
+  // กรณีมาก่อนยืนยัน ให้ย้อนกลับไปหน้าล็อกอิน
+  showSection('login');
+});
+
+document.getElementById('btnHomeFromConfirm')?.addEventListener('click', () => {
+  // โหมด review กดกลับหน้าหลัก
+  try { document.getElementById('loginForm')?.reset(); } catch(e){}
+  REG_DATA = null; INTERVIEW_READY = false; INTERVIEW_RESULT = null;
+  showSection('login');
+});
+      // ===== ปุ่ม ดูผลการสัมภาษณ์ =====
+document.getElementById('btnInterview')?.addEventListener('click', () => {
+  if (!INTERVIEW_RESULT) {
+    alert('ยังไม่มีข้อมูลผลการสัมภาษณ์');
+    return;
+  }
+  showSection('interview');
+});
+
+
 
       // เปิดหน้าแรก
       showSection('login');
