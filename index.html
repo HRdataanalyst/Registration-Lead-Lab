@@ -134,7 +134,7 @@
       </div>
 
       <!-- ============= Interview Result ============= -->
-      <div id="interviewSection" class="hidden">
+      <div id="interviewSection" class="hidden py-6">
         <div class="mt-4 flex justify-center">
           <div id="iv_icon_wrap" class="h-16 w-16 rounded-full grid place-items-center shadow">
             <svg id="iv_icon" viewBox="0 0 24 24" width="32" height="32" fill="none" aria-hidden="true"></svg>
@@ -210,6 +210,8 @@
 
       [loginEl, confirmEl, successEl, interviewEl].forEach(el=> el.classList.add('hidden'));
       setBanner('', '');
+       
+      mainTitle.classList.remove('mt-3','md:mt-4','mt-4','md:mt-5');
 
       if (which === 'confirm'){
         mainTitle.textContent = 'Confirm Registration';
@@ -249,24 +251,38 @@
     }
 
     function renderInterviewResult(result){
-      const iconWrap = document.getElementById('iv_icon_wrap');
-      const icon     = document.getElementById('iv_icon');
-      const msgEl    = document.getElementById('iv_message');
-      const mainTitle= document.getElementById('mainTitle');
+  const iconWrap = document.getElementById('iv_icon_wrap');
+  const icon     = document.getElementById('iv_icon');
+  const msgEl    = document.getElementById('iv_message');
+  const mainTitle= document.getElementById('mainTitle');
 
-      if (result === 'pass'){
-        mainTitle.textContent = 'ผ่านการสัมภาษณ์';
-        iconWrap.className = 'h-16 w-16 rounded-full bg-emerald-200 grid place-items-center shadow';
-        icon.innerHTML     = `<path d="M7 12.5l3 3 7-7" stroke="currentColor" class="text-emerald-700" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`;
-        msgEl.textContent  = 'คุณได้รับการคัดเลือกให้ผ่านเข้าสู่รอบถัดไปของโครงการ Lead Lab';
-      } else {
-        mainTitle.textContent = 'ไม่ผ่านการสัมภาษณ์';
-        iconWrap.className = 'h-16 w-16 rounded-full bg-rose-200 grid place-items-center shadow';
-        icon.innerHTML     = `<path d="M15 9l-6 6M9 9l6 6" stroke="currentColor" class="text-rose-700" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`;
-        msgEl.textContent  = 'ขอบคุณที่เข้าร่วมโครงการ Lead Lab คุณยังไม่ผ่านการคัดเลือกในรอบนี้';
-      }
+  // จูนระยะหัวข้อให้พอดี
+  mainTitle.classList.add('mb-2');
+
+  if (result === 'pass'){
+    mainTitle.textContent = 'ผ่านการสัมภาษณ์';
+    mainTitle.classList.add('mt-3','md:mt-4');
+    // ไอคอนเขียว + ขนาด/ช่องไฟเท่ากัน
+    iconWrap.className = '-mt-1 md:-mt-2 mb-7 h-14 w-14 rounded-full grid place-items-center shadow bg-emerald-200';
+    icon.innerHTML     = `<path d="M7 12.5l3 3 7-7" stroke="currentColor" class="text-emerald-700" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`;
+ 
+    // ข้อความ: กระชับช่องไฟ + ขึ้นบรรทัดใหม่ได้
+    msgEl.className = 'mt-4 text-[15px] md:text-base text-center text-slate-600 whitespace-pre-line leading-relaxed';
+msgEl.textContent = 'ยินดีด้วย!\nคุณได้รับการคัดเลือกให้ผ่านเข้าสู่รอบถัดไป\nของโครงการ Lead Lab';
+ } else {
+  mainTitle.textContent = 'ไม่ผ่านการสัมภาษณ์';
+  mainTitle.classList.add('mt-3','md:mt-4');
+
+  // ไอคอนแดง + ขยับขึ้น + เว้นล่างพอดี
+  iconWrap.className = '-mt-1 md:-mt-2 mb-7 h-14 w-14 rounded-full grid place-items-center shadow bg-rose-200';
+  icon.innerHTML     = `<path d="M15 9l-6 6M9 9l6 6" stroke="currentColor" class="text-rose-700" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`;
+
+  // ข้อความ: เว้นบรรทัดด้วย \n + โปร่งขึ้นเล็กน้อย
+  msgEl.className   = 'mt-4 text-[15px] md:text-base text-center text-slate-600 whitespace-pre-line leading-[1.75]';
+  msgEl.textContent = 'ขอบคุณที่เข้าร่วมโครงการ Lead Lab\nคุณยังไม่ผ่านการคัดเลือกในรอบนี้';
+}
     }
-
+     
     async function getJSON(url){
       const u = new URL(url);
       u.searchParams.set('ts', Date.now().toString());
